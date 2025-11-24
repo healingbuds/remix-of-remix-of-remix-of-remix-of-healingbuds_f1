@@ -270,8 +270,8 @@ const Header = () => {
     </header>
 
     {/* Buttons underneath navbar - desktop: liquid, mobile: floating */}
-    <div className="hidden md:block fixed top-24 md:top-32 left-4 z-40">
-      <div className="flex gap-3">
+    <div className="hidden md:block fixed top-28 md:top-36 left-6 z-40">
+      <div className="flex gap-4">
         <button 
           onClick={() => setEligibilityDialogOpen(true)}
           className="relative font-body font-semibold text-sm text-white border-2 border-white px-8 py-2 rounded-full overflow-hidden group backdrop-blur-md"
