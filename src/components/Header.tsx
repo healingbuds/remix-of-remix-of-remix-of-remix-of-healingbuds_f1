@@ -146,6 +146,22 @@ const Header = () => {
             >
               Contact Us
             </Link>
+
+            {/* Desktop Action Buttons */}
+            <div className="flex items-center gap-3 ml-4 pl-4 border-l border-white/20">
+              <button 
+                onClick={() => setEligibilityDialogOpen(true)}
+                className="font-body font-normal text-sm text-white px-5 py-2 rounded-full transition-all duration-200 hover:opacity-90"
+                style={{ backgroundColor: 'hsl(var(--pharma-green))' }}
+              >
+                Check Eligibility
+              </button>
+              <button 
+                className="font-body font-normal text-sm border border-white/40 text-white px-5 py-2 rounded-full transition-all duration-200 hover:bg-white/10"
+              >
+                Login
+              </button>
+            </div>
           </nav>
 
           {/* Eligibility Dialog */}
@@ -245,52 +261,28 @@ const Header = () => {
               Contact Us
             </Link>
             
-            {/* Mobile Buttons - Floating Style */}
+            {/* Mobile Action Buttons */}
             <div className="pt-4 space-y-3 border-t border-white/20 mt-4">
               <button 
                 onClick={() => {
                   setMobileMenuOpen(false);
                   setEligibilityDialogOpen(true);
                 }}
-                className="w-full font-body font-light text-sm text-white border-2 border-white bg-white/5 px-5 py-3 rounded-full transition-all duration-300 hover:bg-white/10 hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0"
-                style={{ boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)' }}
+                className="w-full font-body font-normal text-sm text-white px-5 py-3 rounded-full transition-all duration-200"
+                style={{ backgroundColor: 'hsl(var(--pharma-green))' }}
               >
-                Eligibility Check
+                Check Eligibility
               </button>
               <button 
-                className="w-full font-body font-light text-sm text-white border-2 border-white bg-white/5 px-5 py-3 rounded-full transition-all duration-300 hover:bg-white/10 hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0"
-                style={{ boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)' }}
+                className="w-full font-body font-normal text-sm text-white border-2 border-white px-5 py-3 rounded-full transition-all duration-200 hover:bg-white/10"
               >
-                Patient Sign-In
+                Login
               </button>
             </div>
           </div>
         </nav>
       </div>
     </header>
-
-    {/* Buttons underneath navbar - desktop: liquid, mobile: floating */}
-    <div className="hidden md:block fixed top-28 md:top-36 right-6 z-40">
-      <div className="flex gap-3">
-        <button 
-          onClick={() => setEligibilityDialogOpen(true)}
-          className="relative font-body font-light text-xs text-white/70 border border-white/30 px-6 py-1.5 rounded-full overflow-hidden group backdrop-blur-sm"
-          style={{ backgroundColor: 'rgba(255, 255, 255, 0.23)' }}
-        >
-          <span className="relative z-10">Eligibility Check</span>
-          <span className="absolute inset-0 bg-white/0 group-hover:bg-white/10 transition-all duration-700 ease-out"></span>
-          <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1200 ease-in-out"></span>
-        </button>
-        <button 
-          className="relative font-body font-light text-xs text-white/70 border border-white/30 px-6 py-1.5 rounded-full overflow-hidden group backdrop-blur-sm"
-          style={{ backgroundColor: 'rgba(255, 255, 255, 0.23)' }}
-        >
-          <span className="relative z-10">Patient Sign-In</span>
-          <span className="absolute inset-0 bg-white/0 group-hover:bg-white/10 transition-all duration-700 ease-out"></span>
-          <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1200 ease-in-out"></span>
-        </button>
-      </div>
-    </div>
   </>
   );
 };
