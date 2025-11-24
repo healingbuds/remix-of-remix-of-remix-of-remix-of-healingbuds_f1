@@ -26,15 +26,16 @@ const Header = () => {
   const isWhatWeDoActive = ['/what-we-do', '/cultivating-processing', '/manufacture-distribution', '/medical-devices', '/medical-clinics', '/online-pharmacy'].includes(location.pathname);
 
   return (
-    <header 
-      className={cn(
-        "fixed top-4 left-4 right-4 z-50 backdrop-blur-xl rounded-xl transition-all duration-200 border border-white/10",
-        scrolled ? "shadow-card" : "shadow-sm"
-      )}
-      style={{ backgroundColor: 'rgba(42, 61, 58, 0.95)' }}
-    >
-      <div className="container mx-auto px-3 sm:px-4 lg:px-6">
-        <div className="flex items-center justify-between h-20 md:h-28">
+    <>
+      <header 
+        className={cn(
+          "fixed top-4 left-4 right-4 z-50 backdrop-blur-xl rounded-xl transition-all duration-200 border border-white/10",
+          scrolled ? "shadow-card" : "shadow-sm"
+        )}
+        style={{ backgroundColor: 'rgba(42, 61, 58, 0.95)' }}
+      >
+        <div className="container mx-auto px-3 sm:px-4 lg:px-6">
+          <div className="flex items-center justify-between h-20 md:h-28">
           <Link to="/" className="flex items-center flex-shrink-0">
             <img 
               src={hbLogoWhite} 
@@ -145,17 +146,6 @@ const Header = () => {
             >
               Contact Us
             </Link>
-            
-            {/* Eligibility Check & Patient Sign-In Buttons */}
-            <button 
-              onClick={() => setEligibilityDialogOpen(true)}
-              className="font-body font-semibold text-sm text-white border-2 border-white px-5 py-2 rounded-full transition-all duration-200 hover:bg-white/10 hover:shadow-glow"
-            >
-              Eligibility Check
-            </button>
-            <button className="font-body font-semibold text-sm text-white border-2 border-white px-5 py-2 rounded-full transition-all duration-200 hover:bg-white/10 hover:shadow-glow">
-              Patient Sign-In
-            </button>
           </nav>
 
           {/* Eligibility Dialog */}
@@ -274,6 +264,26 @@ const Header = () => {
         </nav>
       </div>
     </header>
+
+    {/* Buttons underneath navbar - desktop only */}
+    <div className="hidden md:block fixed top-24 md:top-32 left-4 z-40">
+      <div className="flex gap-3">
+        <button 
+          onClick={() => setEligibilityDialogOpen(true)}
+          className="font-body font-semibold text-sm text-white border-2 border-white px-8 py-1.5 rounded-full transition-all duration-200 hover:bg-white/10 hover:shadow-glow backdrop-blur-md"
+          style={{ backgroundColor: 'rgba(42, 61, 58, 0.7)' }}
+        >
+          Eligibility Check
+        </button>
+        <button 
+          className="font-body font-semibold text-sm text-white border-2 border-white px-8 py-1.5 rounded-full transition-all duration-200 hover:bg-white/10 hover:shadow-glow backdrop-blur-md"
+          style={{ backgroundColor: 'rgba(42, 61, 58, 0.7)' }}
+        >
+          Patient Sign-In
+        </button>
+      </div>
+    </div>
+  </>
   );
 };
 

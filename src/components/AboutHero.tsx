@@ -19,10 +19,10 @@ const AboutHero = () => {
         <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-center">
           <ScrollAnimation>
             <div>
-            <h2 className="font-pharma text-3xl sm:text-4xl md:text-5xl font-semibold text-foreground mb-6 leading-tight tracking-tight">
+            <h2 className="font-inter text-3xl sm:text-4xl md:text-5xl font-light text-foreground mb-6 leading-tight tracking-tight">
               Healing Buds: Advancing Global Cannabis Innovation
             </h2>
-            <p className="font-body text-base sm:text-lg text-muted-foreground leading-relaxed">
+            <p className="font-inter text-base sm:text-lg text-muted-foreground leading-relaxed font-light">
               Committed to excellence in every product we create and championing worldwide cannabis acceptance through quality and integrity.
               </p>
             </div>

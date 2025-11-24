@@ -17,6 +17,7 @@ export default {
         'pharma': ['Archivo Narrow', 'Arial Narrow', 'sans-serif'],
         'body': ['Helvetica', 'Arial', 'sans-serif'],
         'decorative': ['Cinzel', 'serif'],
+        'inter': ['Inter', 'sans-serif'],
       },
       colors: {
         border: "hsl(var(--border))",
