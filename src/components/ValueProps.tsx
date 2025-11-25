@@ -21,11 +21,12 @@ const values = [
 
 const ValueProps = () => {
   return (
-    <section 
-      className="py-12 sm:py-16 md:py-20"
-      style={{ backgroundColor: 'hsl(var(--section-color))' }}
-    >
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="px-2">
+      <section 
+        className="py-12 sm:py-16 md:py-20 rounded-2xl sm:rounded-3xl"
+        style={{ backgroundColor: 'hsl(var(--section-color))' }}
+      >
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <ScrollAnimation>
           <div className="text-center mb-12 sm:mb-16">
             <h2 className="font-pharma text-3xl sm:text-4xl md:text-5xl font-normal text-white mb-4 px-4" style={{ letterSpacing: '0.02em', lineHeight: '1.5' }}>
@@ -56,7 +57,8 @@ const ValueProps = () => {
           ))}
         </div>
       </div>
-    </section>
+      </section>
+    </div>
   );
 };
 

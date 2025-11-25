@@ -24,9 +24,10 @@ const International = () => {
   };
 
   return (
-    <section className="relative py-16 sm:py-20 md:py-24 overflow-hidden" style={{ backgroundColor: 'hsl(var(--section-color))' }}>
-      {/* Subtle background gradient */}
-      <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-white/10 pointer-events-none" />
+    <div className="px-2">
+      <section className="relative py-16 sm:py-20 md:py-24 overflow-hidden rounded-2xl sm:rounded-3xl" style={{ backgroundColor: 'hsl(var(--section-color))' }}>
+        {/* Subtle background gradient */}
+        <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-white/10 pointer-events-none" />
       
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="w-full max-w-7xl mx-auto">
@@ -172,7 +173,8 @@ const International = () => {
           </ScrollAnimation>
         </div>
       </div>
-    </section>
+      </section>
+    </div>
   );
 };
 
