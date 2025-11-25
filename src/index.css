@@ -40,6 +40,10 @@ All colors MUST be HSL.
     --teal-deeper: 200 40% 15%;
     --teal-primary: 200 50% 25%;
     --teal-darker: 200 35% 15%;
+    
+    /* Sage Purple Range */
+    --sage-purple: 320 13% 34%;        /* #624B54 */
+    --sage-purple-light: 295 20% 47%; /* #8B5F90 */
 
     --primary: 155 60% 45%;         /* Deep green */
     --primary-foreground: 0 0% 100%;
