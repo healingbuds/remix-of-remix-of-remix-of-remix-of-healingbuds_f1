@@ -126,19 +126,19 @@ const Research = () => {
           </div>
         </section>
 
-        {/* Research Areas - Linear style */}
+        {/* Research Areas with Eligible Conditions */}
         <section className="py-20 md:py-32" style={{ backgroundColor: 'hsl(var(--section-color))' }}>
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <ScrollAnimation>
               <h2 className="text-4xl md:text-5xl font-semibold text-white text-center mb-6 tracking-tight">
-                Our Research Focus Areas
+                Eligible Conditions We Treat
               </h2>
               <p className="text-lg text-white/70 text-center max-w-3xl mx-auto mb-16 md:mb-20">
-                Exploring medical cannabis applications across key therapeutic areas
+                Medical cannabis research across key therapeutic areas
               </p>
             </ScrollAnimation>
             
-            <div className="space-y-20">
+            <div className="space-y-16">
               {Object.entries(conditionsByCategory).map(([category, conditions]) => (
                 <div key={category}>
                   <ScrollAnimation>
@@ -147,25 +147,25 @@ const Research = () => {
                     </h3>
                   </ScrollAnimation>
                   
-                  <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                     {conditions.map((condition) => (
                       <ScrollAnimation key={condition.id}>
                         <Link
                           to={`/conditions/${condition.id}`}
-                          className="group block bg-white/[0.03] backdrop-blur-sm rounded-xl overflow-hidden border border-white/10 hover:bg-white/[0.06] hover:border-white/20 transition-all duration-300 hover:-translate-y-1"
+                          className="group block bg-card rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-2 border border-white/10"
                         >
-                          <div className="h-40 overflow-hidden bg-gradient-to-br from-white/5 to-white/[0.02]">
+                          <div className="h-48 overflow-hidden bg-gradient-to-br from-muted/30 to-muted/10">
                             <img
                               src={condition.image}
                               alt={condition.name}
                               className="w-full h-full object-contain p-6 group-hover:scale-105 transition-transform duration-500"
                             />
                           </div>
-                          <div className="p-5 flex items-center justify-between">
-                            <h4 className="text-lg font-medium text-white group-hover:text-primary transition-colors">
+                          <div className="p-5 bg-card">
+                            <h4 className="text-xl font-semibold text-foreground mb-2 group-hover:text-primary transition-colors">
                               {condition.name}
                             </h4>
-                            <ArrowRight className="w-5 h-5 text-white/50 group-hover:text-primary group-hover:translate-x-1 transition-all" />
+                            <p className="text-sm text-muted-foreground">{category}</p>
                           </div>
                         </Link>
                       </ScrollAnimation>
@@ -177,9 +177,12 @@ const Research = () => {
 
             <ScrollAnimation>
               <div className="mt-16 text-center">
-                <Link to="/conditions">
+                <p className="text-white/70 mb-6 text-lg">
+                  Don't see your condition listed? We may still be able to help.
+                </p>
+                <Link to="/contact">
                   <button className="btn-linear text-white border border-white/30 hover:bg-white/10 px-8 py-3 text-lg">
-                    View All Eligible Conditions →
+                    Contact Us →
                   </button>
                 </Link>
               </div>
