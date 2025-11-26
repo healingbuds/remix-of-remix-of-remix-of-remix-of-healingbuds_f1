@@ -430,10 +430,10 @@ const InteractiveMap = ({ selectedCountry, onCountrySelect }: InteractiveMapProp
           
           {/* Content */}
           <div className="relative z-10 flex items-start gap-3">
-            <Sparkles className="w-5 h-5 text-teal-500 dark:text-teal-400 flex-shrink-0 mt-0.5 drop-shadow-[0_0_8px_rgba(20,184,166,0.6)]" />
+            <Sparkles className="w-5 h-5 text-teal-400 flex-shrink-0 mt-0.5 drop-shadow-[0_0_8px_rgba(20,184,166,0.6)]" />
             <div>
-              <div className="text-xs font-bold text-foreground mb-1.5 drop-shadow-sm">Licensed Partner Network</div>
-              <p className="text-[10px] text-muted-foreground leading-relaxed drop-shadow-sm">
+              <div className="text-xs font-bold text-white mb-1.5 drop-shadow-md">Licensed Partner Network</div>
+              <p className="text-[10px] text-white/90 leading-relaxed drop-shadow-md">
                 All facilities operate under licensed partners with full regulatory compliance. Digital Key holders earn blockchain-verified rewards without handling cannabis products.
               </p>
             </div>
