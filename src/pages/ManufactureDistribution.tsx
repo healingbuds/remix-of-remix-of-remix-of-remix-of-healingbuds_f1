@@ -129,7 +129,7 @@ const ManufactureDistribution = () => {
           </section>
 
           {/* Why Partner Section */}
-          <section className="py-16 md:py-24" style={{ backgroundColor: 'hsl(var(--section-color))' }}>
+          <section className="py-16 md:py-24 mb-8" style={{ backgroundColor: 'hsl(var(--section-color))' }}>
             <div className="container mx-auto px-4 sm:px-6 lg:px-8">
               <ScrollAnimation>
                 <div className="max-w-4xl mx-auto text-center">

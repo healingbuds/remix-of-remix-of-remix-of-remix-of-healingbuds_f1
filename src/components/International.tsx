@@ -24,7 +24,7 @@ const International = () => {
   };
 
   return (
-    <div className="px-2">
+    <div className="px-2 mt-8">
       <section className="relative py-16 sm:py-20 md:py-24 overflow-hidden rounded-2xl sm:rounded-3xl" style={{ backgroundColor: 'hsl(var(--section-color))' }}>
         {/* Subtle background gradient */}
         <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-white/10 pointer-events-none" />
