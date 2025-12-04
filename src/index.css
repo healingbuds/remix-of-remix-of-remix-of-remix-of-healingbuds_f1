@@ -163,45 +163,64 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground antialiased font-geist;
-    letter-spacing: -0.015em;
+    @apply bg-background text-foreground antialiased font-jakarta;
+    letter-spacing: -0.01em;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
   
   h1, h2, h3, h4, h5, h6 {
-    @apply font-pharma;
+    @apply font-jakarta;
     font-weight: 600;
-    letter-spacing: -0.01em;
-    line-height: 1.4;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
   }
   
   h1 {
     @apply text-4xl md:text-5xl lg:text-6xl;
+    line-height: 1.1;
   }
   
   h2 {
     @apply text-3xl md:text-4xl lg:text-5xl;
+    line-height: 1.15;
   }
   
   h3 {
     @apply text-2xl md:text-3xl;
+    line-height: 1.25;
+  }
+  
+  h4 {
+    @apply text-xl md:text-2xl;
   }
   
   p {
-    line-height: 1.6;
-    @apply font-geist;
+    line-height: 1.7;
+    @apply font-jakarta text-base md:text-lg;
+    letter-spacing: 0.01em;
   }
   
-  /* Cards use Geist for modern, clean look */
+  /* Cards use Jakarta for modern, clean look */
   .card, [class*="card-"] {
-    @apply font-geist;
+    @apply font-jakarta;
   }
   
   /* Buttons and interactive elements */
   button, .btn {
-    @apply font-geist;
-    letter-spacing: -0.01em;
+    @apply font-jakarta font-medium;
+    letter-spacing: 0em;
+  }
+  
+  /* Form elements */
+  label {
+    @apply font-jakarta font-medium text-sm;
+    letter-spacing: 0.01em;
+  }
+  
+  input, textarea, select {
+    @apply font-jakarta;
+    letter-spacing: 0em;
   }
 }
 

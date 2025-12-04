@@ -11,7 +11,7 @@ import { RadioGroup, RadioGroupItem } from './ui/radio-group';
 import { Checkbox } from './ui/checkbox';
 import { Calendar } from './ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
-import { CalendarIcon, CheckCircle2, AlertCircle } from 'lucide-react';
+import { CalendarIcon, CheckCircle2, AlertCircle, Leaf } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { toast } from '@/hooks/use-toast';
@@ -148,24 +148,28 @@ const EligibilityDialog = ({ open, onOpenChange }: EligibilityDialogProps) => {
   };
 
   const renderProgressBar = () => (
-    <div className="flex items-center justify-between mb-6 sm:mb-8">
+    <div className="flex items-center justify-between mb-8 sm:mb-10 px-2">
       {[1, 2, 3, 4].map((step) => (
         <div key={step} className="flex items-center flex-1">
           <div
             className={cn(
-              "w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-pharma font-semibold transition-all duration-200",
+              "w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center text-sm sm:text-base font-semibold transition-all duration-300 shadow-sm",
               currentStep >= step
-                ? "bg-pharma-green text-white"
-                : "bg-pharma-grey-light text-pharma-grey"
+                ? "bg-primary text-primary-foreground shadow-md"
+                : "bg-muted text-muted-foreground"
             )}
           >
-            {step}
+            {currentStep > step ? (
+              <CheckCircle2 className="w-5 h-5 sm:w-6 sm:h-6" />
+            ) : (
+              step
+            )}
           </div>
           {step < 4 && (
             <div
               className={cn(
-                "flex-1 h-1 mx-1 sm:mx-2 rounded transition-all duration-200",
-                currentStep > step ? "bg-pharma-green" : "bg-pharma-grey-light"
+                "flex-1 h-1 mx-2 sm:mx-3 rounded-full transition-all duration-300",
+                currentStep > step ? "bg-primary" : "bg-muted"
               )}
             />
           )}
@@ -174,15 +178,24 @@ const EligibilityDialog = ({ open, onOpenChange }: EligibilityDialogProps) => {
     </div>
   );
 
+  // Section divider component
+  const SectionDivider = () => (
+    <div className="flex items-center gap-3 py-2">
+      <div className="flex-1 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
+      <Leaf className="w-4 h-4 text-primary/40" />
+      <div className="flex-1 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
+    </div>
+  );
+
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto p-4 sm:p-6">
-        <DialogHeader>
-          <DialogTitle className="font-pharma text-2xl text-pharma-charcoal">
-            Medical Cannabis Eligibility Assessment
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto p-6 sm:p-8 rounded-2xl">
+        <DialogHeader className="space-y-3 pb-4">
+          <DialogTitle className="text-2xl sm:text-3xl font-semibold text-foreground tracking-tight">
+            Medical Cannabis Eligibility
           </DialogTitle>
-          <DialogDescription className="font-body text-pharma-grey">
-            Please complete all steps to determine your eligibility for medical cannabis treatment.
+          <DialogDescription className="text-base text-muted-foreground leading-relaxed">
+            Complete all steps to determine your eligibility for medical cannabis treatment.
           </DialogDescription>
         </DialogHeader>
 
@@ -190,74 +203,83 @@ const EligibilityDialog = ({ open, onOpenChange }: EligibilityDialogProps) => {
 
         {/* Step 1: Personal Information */}
         {currentStep === 1 && (
-          <form onSubmit={step1Form.handleSubmit(handleStep1Submit)} className="space-y-6">
-            <div className="space-y-4">
-              <h3 className="font-pharma text-lg font-semibold text-pharma-charcoal">Personal Information</h3>
+          <form onSubmit={step1Form.handleSubmit(handleStep1Submit)} className="space-y-8">
+            <div className="space-y-6">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <span className="text-primary font-semibold text-sm">1</span>
+                </div>
+                <h3 className="text-lg font-semibold text-foreground">Personal Information</h3>
+              </div>
               
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="firstName" className="font-body">First Name *</Label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <div className="space-y-2.5">
+                  <Label htmlFor="firstName" className="text-foreground/90">First Name *</Label>
                   <Input
                     id="firstName"
+                    placeholder="Enter your first name"
                     {...step1Form.register('firstName')}
-                    className="font-body"
                   />
                   {step1Form.formState.errors.firstName && (
-                    <p className="text-sm text-destructive">{step1Form.formState.errors.firstName.message}</p>
+                    <p className="text-sm text-destructive mt-1">{step1Form.formState.errors.firstName.message}</p>
                   )}
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="lastName" className="font-body">Last Name *</Label>
+                <div className="space-y-2.5">
+                  <Label htmlFor="lastName" className="text-foreground/90">Last Name *</Label>
                   <Input
                     id="lastName"
+                    placeholder="Enter your last name"
                     {...step1Form.register('lastName')}
-                    className="font-body"
                   />
                   {step1Form.formState.errors.lastName && (
-                    <p className="text-sm text-destructive">{step1Form.formState.errors.lastName.message}</p>
+                    <p className="text-sm text-destructive mt-1">{step1Form.formState.errors.lastName.message}</p>
                   )}
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="email" className="font-body">Email Address *</Label>
+              <SectionDivider />
+
+              <div className="space-y-2.5">
+                <Label htmlFor="email" className="text-foreground/90">Email Address *</Label>
                 <Input
                   id="email"
                   type="email"
+                  placeholder="your@email.com"
                   {...step1Form.register('email')}
-                  className="font-body"
                 />
                 {step1Form.formState.errors.email && (
-                  <p className="text-sm text-destructive">{step1Form.formState.errors.email.message}</p>
+                  <p className="text-sm text-destructive mt-1">{step1Form.formState.errors.email.message}</p>
                 )}
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="phone" className="font-body">Phone Number *</Label>
+              <div className="space-y-2.5">
+                <Label htmlFor="phone" className="text-foreground/90">Phone Number *</Label>
                 <Input
                   id="phone"
                   type="tel"
+                  placeholder="+1 (555) 000-0000"
                   {...step1Form.register('phone')}
-                  className="font-body"
                 />
                 {step1Form.formState.errors.phone && (
-                  <p className="text-sm text-destructive">{step1Form.formState.errors.phone.message}</p>
+                  <p className="text-sm text-destructive mt-1">{step1Form.formState.errors.phone.message}</p>
                 )}
               </div>
 
-              <div className="space-y-2">
-                <Label className="font-body">Date of Birth *</Label>
+              <SectionDivider />
+
+              <div className="space-y-2.5">
+                <Label className="text-foreground/90">Date of Birth *</Label>
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button
                       variant="outline"
                       className={cn(
-                        "w-full justify-start text-left font-body",
+                        "w-full justify-start text-left h-12 rounded-xl border-2 hover:border-primary/30 transition-all",
                         !step1Form.watch('dateOfBirth') && "text-muted-foreground"
                       )}
                     >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      <CalendarIcon className="mr-3 h-5 w-5 text-primary/60" />
                       {step1Form.watch('dateOfBirth') ? (
                         format(step1Form.watch('dateOfBirth'), "PPP")
                       ) : (
@@ -279,14 +301,14 @@ const EligibilityDialog = ({ open, onOpenChange }: EligibilityDialogProps) => {
                   </PopoverContent>
                 </Popover>
                 {step1Form.formState.errors.dateOfBirth && (
-                  <p className="text-sm text-destructive">{step1Form.formState.errors.dateOfBirth.message}</p>
+                  <p className="text-sm text-destructive mt-1">{step1Form.formState.errors.dateOfBirth.message}</p>
                 )}
               </div>
             </div>
 
-            <div className="flex justify-end">
-              <Button type="submit" className="font-pharma font-semibold">
-                Next Step
+            <div className="flex justify-end pt-4">
+              <Button type="submit" className="px-8 h-12 rounded-xl font-semibold text-base">
+                Continue
               </Button>
             </div>
           </form>
@@ -294,59 +316,85 @@ const EligibilityDialog = ({ open, onOpenChange }: EligibilityDialogProps) => {
 
         {/* Step 2: Medical Information */}
         {currentStep === 2 && (
-          <form onSubmit={step2Form.handleSubmit(handleStep2Submit)} className="space-y-6">
-            <div className="space-y-4">
-              <h3 className="font-pharma text-lg font-semibold text-pharma-charcoal">Medical Information</h3>
+          <form onSubmit={step2Form.handleSubmit(handleStep2Submit)} className="space-y-8">
+            <div className="space-y-6">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <span className="text-primary font-semibold text-sm">2</span>
+                </div>
+                <h3 className="text-lg font-semibold text-foreground">Medical Information</h3>
+              </div>
               
-              <div className="space-y-3">
-                <Label className="font-body">Medical Conditions (Select all that apply) *</Label>
-                {medicalConditions.map((condition) => (
-                  <div key={condition} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={condition}
-                      onCheckedChange={(checked) => {
+              <div className="space-y-4">
+                <Label className="text-foreground/90 text-base">Medical Conditions *</Label>
+                <p className="text-sm text-muted-foreground -mt-2">Select all conditions that apply to you</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                  {medicalConditions.map((condition) => (
+                    <div 
+                      key={condition} 
+                      className="flex items-center gap-3 p-3 rounded-xl border-2 border-transparent hover:border-primary/20 hover:bg-primary/5 transition-all cursor-pointer"
+                      onClick={() => {
                         const currentConditions = step2Form.getValues('conditions') || [];
-                        if (checked) {
-                          step2Form.setValue('conditions', [...currentConditions, condition]);
+                        const isChecked = currentConditions.includes(condition);
+                        if (isChecked) {
+                          step2Form.setValue('conditions', currentConditions.filter((c) => c !== condition));
                         } else {
-                          step2Form.setValue(
-                            'conditions',
-                            currentConditions.filter((c) => c !== condition)
-                          );
+                          step2Form.setValue('conditions', [...currentConditions, condition]);
                         }
                       }}
-                    />
-                    <Label htmlFor={condition} className="font-body font-normal cursor-pointer">
-                      {condition}
-                    </Label>
-                  </div>
-                ))}
+                    >
+                      <Checkbox
+                        id={condition}
+                        checked={step2Form.watch('conditions')?.includes(condition)}
+                        onCheckedChange={(checked) => {
+                          const currentConditions = step2Form.getValues('conditions') || [];
+                          if (checked) {
+                            step2Form.setValue('conditions', [...currentConditions, condition]);
+                          } else {
+                            step2Form.setValue(
+                              'conditions',
+                              currentConditions.filter((c) => c !== condition)
+                            );
+                          }
+                        }}
+                      />
+                      <Label htmlFor={condition} className="font-normal cursor-pointer text-foreground/80 flex-1">
+                        {condition}
+                      </Label>
+                    </div>
+                  ))}
+                </div>
                 {step2Form.formState.errors.conditions && (
                   <p className="text-sm text-destructive">{step2Form.formState.errors.conditions.message}</p>
                 )}
               </div>
 
               {step2Form.watch('conditions')?.includes('Other (please specify)') && (
-                <div className="space-y-2">
-                  <Label htmlFor="otherCondition" className="font-body">Please specify other condition</Label>
-                  <Input
-                    id="otherCondition"
-                    {...step2Form.register('otherCondition')}
-                    className="font-body"
-                  />
-                  {step2Form.formState.errors.otherCondition && (
-                    <p className="text-sm text-destructive">{step2Form.formState.errors.otherCondition.message}</p>
-                  )}
-                </div>
+                <>
+                  <SectionDivider />
+                  <div className="space-y-2.5">
+                    <Label htmlFor="otherCondition" className="text-foreground/90">Please specify other condition</Label>
+                    <Input
+                      id="otherCondition"
+                      placeholder="Describe your condition"
+                      {...step2Form.register('otherCondition')}
+                    />
+                    {step2Form.formState.errors.otherCondition && (
+                      <p className="text-sm text-destructive">{step2Form.formState.errors.otherCondition.message}</p>
+                    )}
+                  </div>
+                </>
               )}
 
-              <div className="space-y-2">
-                <Label htmlFor="symptoms" className="font-body">Describe Your Symptoms *</Label>
+              <SectionDivider />
+
+              <div className="space-y-2.5">
+                <Label htmlFor="symptoms" className="text-foreground/90">Describe Your Symptoms *</Label>
                 <Textarea
                   id="symptoms"
                   {...step2Form.register('symptoms')}
                   placeholder="Please describe your symptoms and how they affect your daily life..."
-                  className="font-body min-h-32"
+                  className="min-h-32 rounded-xl border-2 p-4 resize-none focus:border-primary/50 transition-all"
                 />
                 {step2Form.formState.errors.symptoms && (
                   <p className="text-sm text-destructive">{step2Form.formState.errors.symptoms.message}</p>
@@ -354,12 +402,12 @@ const EligibilityDialog = ({ open, onOpenChange }: EligibilityDialogProps) => {
               </div>
             </div>
 
-            <div className="flex justify-between">
-              <Button type="button" variant="outline" onClick={handleBack} className="font-pharma">
+            <div className="flex justify-between pt-4 gap-4">
+              <Button type="button" variant="outline" onClick={handleBack} className="px-6 h-12 rounded-xl">
                 Back
               </Button>
-              <Button type="submit" className="font-pharma font-semibold">
-                Next Step
+              <Button type="submit" className="px-8 h-12 rounded-xl font-semibold text-base">
+                Continue
               </Button>
             </div>
           </form>
@@ -367,23 +415,45 @@ const EligibilityDialog = ({ open, onOpenChange }: EligibilityDialogProps) => {
 
         {/* Step 3: Medical History */}
         {currentStep === 3 && (
-          <form onSubmit={step3Form.handleSubmit(handleStep3Submit)} className="space-y-6">
-            <div className="space-y-4">
-              <h3 className="font-pharma text-lg font-semibold text-pharma-charcoal">Medical History</h3>
+          <form onSubmit={step3Form.handleSubmit(handleStep3Submit)} className="space-y-8">
+            <div className="space-y-6">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <span className="text-primary font-semibold text-sm">3</span>
+                </div>
+                <h3 className="text-lg font-semibold text-foreground">Medical History</h3>
+              </div>
               
-              <div className="space-y-3">
-                <Label className="font-body">Have you used medical cannabis before? *</Label>
+              <div className="space-y-4">
+                <Label className="text-foreground/90 text-base">Have you used medical cannabis before? *</Label>
                 <RadioGroup
                   onValueChange={(value) => step3Form.setValue('previousCannabisUse', value as 'yes' | 'no')}
                   defaultValue={step3Form.watch('previousCannabisUse')}
+                  className="flex gap-4 pt-2"
                 >
-                  <div className="flex items-center space-x-2">
+                  <div 
+                    className={cn(
+                      "flex items-center gap-3 p-4 rounded-xl border-2 flex-1 cursor-pointer transition-all",
+                      step3Form.watch('previousCannabisUse') === 'yes' 
+                        ? "border-primary bg-primary/5" 
+                        : "border-border hover:border-primary/30"
+                    )}
+                    onClick={() => step3Form.setValue('previousCannabisUse', 'yes')}
+                  >
                     <RadioGroupItem value="yes" id="cannabis-yes" />
-                    <Label htmlFor="cannabis-yes" className="font-body font-normal cursor-pointer">Yes</Label>
+                    <Label htmlFor="cannabis-yes" className="font-normal cursor-pointer text-base">Yes</Label>
                   </div>
-                  <div className="flex items-center space-x-2">
+                  <div 
+                    className={cn(
+                      "flex items-center gap-3 p-4 rounded-xl border-2 flex-1 cursor-pointer transition-all",
+                      step3Form.watch('previousCannabisUse') === 'no' 
+                        ? "border-primary bg-primary/5" 
+                        : "border-border hover:border-primary/30"
+                    )}
+                    onClick={() => step3Form.setValue('previousCannabisUse', 'no')}
+                  >
                     <RadioGroupItem value="no" id="cannabis-no" />
-                    <Label htmlFor="cannabis-no" className="font-body font-normal cursor-pointer">No</Label>
+                    <Label htmlFor="cannabis-no" className="font-normal cursor-pointer text-base">No</Label>
                   </div>
                 </RadioGroup>
                 {step3Form.formState.errors.previousCannabisUse && (
@@ -391,26 +461,30 @@ const EligibilityDialog = ({ open, onOpenChange }: EligibilityDialogProps) => {
                 )}
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="currentMedications" className="font-body">Current Medications</Label>
+              <SectionDivider />
+
+              <div className="space-y-2.5">
+                <Label htmlFor="currentMedications" className="text-foreground/90">Current Medications</Label>
+                <p className="text-sm text-muted-foreground -mt-1">Optional - helps us assess potential interactions</p>
                 <Textarea
                   id="currentMedications"
                   {...step3Form.register('currentMedications')}
                   placeholder="List any medications you are currently taking..."
-                  className="font-body min-h-24"
+                  className="min-h-24 rounded-xl border-2 p-4 resize-none focus:border-primary/50 transition-all"
                 />
                 {step3Form.formState.errors.currentMedications && (
                   <p className="text-sm text-destructive">{step3Form.formState.errors.currentMedications.message}</p>
                 )}
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="allergies" className="font-body">Allergies</Label>
+              <div className="space-y-2.5">
+                <Label htmlFor="allergies" className="text-foreground/90">Allergies</Label>
+                <p className="text-sm text-muted-foreground -mt-1">Optional - list any known allergies</p>
                 <Textarea
                   id="allergies"
                   {...step3Form.register('allergies')}
                   placeholder="List any known allergies..."
-                  className="font-body min-h-24"
+                  className="min-h-24 rounded-xl border-2 p-4 resize-none focus:border-primary/50 transition-all"
                 />
                 {step3Form.formState.errors.allergies && (
                   <p className="text-sm text-destructive">{step3Form.formState.errors.allergies.message}</p>
@@ -418,12 +492,12 @@ const EligibilityDialog = ({ open, onOpenChange }: EligibilityDialogProps) => {
               </div>
             </div>
 
-            <div className="flex justify-between">
-              <Button type="button" variant="outline" onClick={handleBack} className="font-pharma">
+            <div className="flex justify-between pt-4 gap-4">
+              <Button type="button" variant="outline" onClick={handleBack} className="px-6 h-12 rounded-xl">
                 Back
               </Button>
-              <Button type="submit" className="font-pharma font-semibold">
-                Next Step
+              <Button type="submit" className="px-8 h-12 rounded-xl font-semibold text-base">
+                Continue
               </Button>
             </div>
           </form>
@@ -431,50 +505,75 @@ const EligibilityDialog = ({ open, onOpenChange }: EligibilityDialogProps) => {
 
         {/* Step 4: Consent & Acknowledgment */}
         {currentStep === 4 && (
-          <form onSubmit={step4Form.handleSubmit(handleStep4Submit)} className="space-y-6">
-            <div className="space-y-4">
-              <h3 className="font-pharma text-lg font-semibold text-pharma-charcoal">Consent & Acknowledgment</h3>
+          <form onSubmit={step4Form.handleSubmit(handleStep4Submit)} className="space-y-8">
+            <div className="space-y-6">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <span className="text-primary font-semibold text-sm">4</span>
+                </div>
+                <h3 className="text-lg font-semibold text-foreground">Consent & Acknowledgment</h3>
+              </div>
               
-              <div className="space-y-4 bg-pharma-grey-light/20 p-4 rounded-lg">
-                <div className="flex items-start space-x-3">
+              <div className="space-y-5 bg-muted/30 p-5 sm:p-6 rounded-2xl border border-border/50">
+                <div 
+                  className={cn(
+                    "flex items-start gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all",
+                    step4Form.watch('consent') 
+                      ? "border-primary bg-primary/5" 
+                      : "border-border hover:border-primary/30"
+                  )}
+                  onClick={() => step4Form.setValue('consent', !step4Form.watch('consent'))}
+                >
                   <Checkbox
                     id="consent"
+                    checked={step4Form.watch('consent')}
                     onCheckedChange={(checked) => step4Form.setValue('consent', checked as boolean)}
+                    className="mt-0.5"
                   />
-                  <Label htmlFor="consent" className="font-body text-sm font-normal cursor-pointer leading-relaxed">
+                  <Label htmlFor="consent" className="text-sm font-normal cursor-pointer leading-relaxed text-foreground/80">
                     I consent to the collection and processing of my personal health information for the purpose of assessing my eligibility for medical cannabis treatment. I understand that this information will be reviewed by qualified healthcare professionals.
                   </Label>
                 </div>
                 {step4Form.formState.errors.consent && (
-                  <p className="text-sm text-destructive ml-7">{step4Form.formState.errors.consent.message}</p>
+                  <p className="text-sm text-destructive pl-2">{step4Form.formState.errors.consent.message}</p>
                 )}
 
-                <div className="flex items-start space-x-3">
+                <div 
+                  className={cn(
+                    "flex items-start gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all",
+                    step4Form.watch('privacyAcknowledgment') 
+                      ? "border-primary bg-primary/5" 
+                      : "border-border hover:border-primary/30"
+                  )}
+                  onClick={() => step4Form.setValue('privacyAcknowledgment', !step4Form.watch('privacyAcknowledgment'))}
+                >
                   <Checkbox
                     id="privacy"
+                    checked={step4Form.watch('privacyAcknowledgment')}
                     onCheckedChange={(checked) => step4Form.setValue('privacyAcknowledgment', checked as boolean)}
+                    className="mt-0.5"
                   />
-                  <Label htmlFor="privacy" className="font-body text-sm font-normal cursor-pointer leading-relaxed">
+                  <Label htmlFor="privacy" className="text-sm font-normal cursor-pointer leading-relaxed text-foreground/80">
                     I acknowledge that I have read and understood the privacy policy and understand how my data will be stored and used in accordance with applicable healthcare regulations.
                   </Label>
                 </div>
                 {step4Form.formState.errors.privacyAcknowledgment && (
-                  <p className="text-sm text-destructive ml-7">{step4Form.formState.errors.privacyAcknowledgment.message}</p>
+                  <p className="text-sm text-destructive pl-2">{step4Form.formState.errors.privacyAcknowledgment.message}</p>
                 )}
               </div>
 
-              <div className="bg-primary/10 border border-primary/20 p-4 rounded-lg">
-                <p className="font-body text-sm text-pharma-charcoal leading-relaxed">
-                  <strong>Note:</strong> This assessment does not constitute medical advice or guarantee approval for medical cannabis treatment. A qualified healthcare professional will review your application and may contact you for additional information or consultation.
+              <div className="bg-primary/5 border border-primary/20 p-5 rounded-2xl">
+                <p className="text-sm text-foreground/80 leading-relaxed">
+                  <strong className="text-foreground">Important:</strong> This assessment does not constitute medical advice or guarantee approval for medical cannabis treatment. A qualified healthcare professional will review your application and may contact you for additional information or consultation.
                 </p>
               </div>
             </div>
 
-            <div className="flex justify-between">
-              <Button type="button" variant="outline" onClick={handleBack} className="font-pharma">
+            <div className="flex justify-between pt-4 gap-4">
+              <Button type="button" variant="outline" onClick={handleBack} className="px-6 h-12 rounded-xl">
                 Back
               </Button>
-              <Button type="submit" className="font-pharma font-semibold">
+              <Button type="submit" className="px-8 h-12 rounded-xl font-semibold text-base">
                 Submit Application
               </Button>
             </div>
@@ -483,35 +582,39 @@ const EligibilityDialog = ({ open, onOpenChange }: EligibilityDialogProps) => {
 
         {/* Step 5: Result */}
         {currentStep === 5 && (
-          <div className="space-y-6 py-8">
-            <div className="flex flex-col items-center text-center space-y-4">
+          <div className="space-y-8 py-8">
+            <div className="flex flex-col items-center text-center space-y-5">
               {isEligible ? (
                 <>
-                  <CheckCircle2 className="w-20 h-20 text-pharma-green" />
-                  <h3 className="font-pharma text-2xl font-bold text-pharma-charcoal">
+                  <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center">
+                    <CheckCircle2 className="w-12 h-12 text-primary" />
+                  </div>
+                  <h3 className="text-2xl font-semibold text-foreground">
                     Application Submitted Successfully
                   </h3>
-                  <p className="font-body text-pharma-grey max-w-md">
+                  <p className="text-muted-foreground max-w-md leading-relaxed">
                     Thank you for completing the eligibility assessment. Based on the information provided, you may be eligible for medical cannabis treatment. Our healthcare team will review your application and contact you within 2-3 business days.
                   </p>
-                  <div className="bg-pharma-green/10 border border-pharma-green/20 p-4 rounded-lg mt-4">
-                    <p className="font-body text-sm text-pharma-charcoal">
-                      We've sent a confirmation email to <strong>{formData.email}</strong>. Please check your inbox for next steps.
+                  <div className="bg-primary/5 border border-primary/20 p-5 rounded-2xl mt-4 w-full max-w-md">
+                    <p className="text-sm text-foreground/80">
+                      We've sent a confirmation email to <strong className="text-foreground">{formData.email}</strong>. Please check your inbox for next steps.
                     </p>
                   </div>
                 </>
               ) : (
                 <>
-                  <AlertCircle className="w-20 h-20 text-primary" />
-                  <h3 className="font-pharma text-2xl font-bold text-pharma-charcoal">
+                  <div className="w-20 h-20 rounded-full bg-secondary/10 flex items-center justify-center">
+                    <AlertCircle className="w-12 h-12 text-secondary" />
+                  </div>
+                  <h3 className="text-2xl font-semibold text-foreground">
                     Additional Information Required
                   </h3>
-                  <p className="font-body text-pharma-grey max-w-md">
+                  <p className="text-muted-foreground max-w-md leading-relaxed">
                     Thank you for your application. Based on the information provided, we need to gather some additional details to properly assess your eligibility. Our team will contact you shortly to discuss your options.
                   </p>
-                  <div className="bg-primary/10 border border-primary/20 p-4 rounded-lg mt-4">
-                    <p className="font-body text-sm text-pharma-charcoal">
-                      We've sent a confirmation email to <strong>{formData.email}</strong>. A healthcare professional will reach out within 2-3 business days.
+                  <div className="bg-secondary/5 border border-secondary/20 p-5 rounded-2xl mt-4 w-full max-w-md">
+                    <p className="text-sm text-foreground/80">
+                      We've sent a confirmation email to <strong className="text-foreground">{formData.email}</strong>. A healthcare professional will reach out within 2-3 business days.
                     </p>
                   </div>
                 </>
@@ -519,7 +622,7 @@ const EligibilityDialog = ({ open, onOpenChange }: EligibilityDialogProps) => {
             </div>
 
             <div className="flex justify-center pt-4">
-              <Button onClick={handleClose} className="font-pharma font-semibold px-8">
+              <Button onClick={handleClose} className="px-10 h-12 rounded-xl font-semibold text-base">
                 Close
               </Button>
             </div>
