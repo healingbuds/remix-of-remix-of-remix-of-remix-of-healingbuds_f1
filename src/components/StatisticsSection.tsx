@@ -29,7 +29,7 @@ const StatisticsSection = () => {
     },
     {
       label: 'Production Capacity',
-      value: 7500,
+      value: 60000,
       suffix: ' kg/year',
       icon: <Building2 className="w-8 h-8" />,
       color: 'from-accent to-primary'

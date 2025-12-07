@@ -156,7 +156,7 @@ const InteractiveMap = ({ selectedCountry, onCountrySelect }: InteractiveMapProp
   useEffect(() => {
     if (!mapContainer.current) return;
     
-    // Custom branded style with design system colors
+    // Custom branded style with design system colors - improved visibility
     const style = {
       version: 8,
       sources: {
@@ -173,7 +173,7 @@ const InteractiveMap = ({ selectedCountry, onCountrySelect }: InteractiveMapProp
           id: 'background',
           type: 'background',
           paint: {
-            'background-color': 'hsl(171, 12%, 94%)' // Muted background
+            'background-color': 'hsl(171, 12%, 88%)' // Slightly darker muted background
           }
         },
         {
@@ -183,11 +183,11 @@ const InteractiveMap = ({ selectedCountry, onCountrySelect }: InteractiveMapProp
           minzoom: 0,
           maxzoom: 22,
           paint: {
-            'raster-opacity': 0.65, // Subtle map tiles
-            'raster-saturation': -0.4, // Desaturated
-            'raster-contrast': -0.1,
-            'raster-brightness-min': 0.3,
-            'raster-brightness-max': 0.9
+            'raster-opacity': 0.75, // Increased opacity for better visibility
+            'raster-saturation': -0.3, // Less desaturation
+            'raster-contrast': 0.05, // Slight contrast boost
+            'raster-brightness-min': 0.25,
+            'raster-brightness-max': 0.85
           }
         },
         {
@@ -195,7 +195,7 @@ const InteractiveMap = ({ selectedCountry, onCountrySelect }: InteractiveMapProp
           type: 'background',
           paint: {
             'background-color': 'hsl(178, 48%, 33%)', // Secondary green overlay
-            'background-opacity': 0.08
+            'background-opacity': 0.06
           }
         }
       ]
@@ -387,36 +387,36 @@ const InteractiveMap = ({ selectedCountry, onCountrySelect }: InteractiveMapProp
         el.style.opacity = '0';
         el.style.transform = 'scale(0)';
 
-        // Quick stats tooltip
+        // Quick stats tooltip - improved visibility
         const quickTooltip = new maplibregl.Popup({ 
           offset: 15,
           className: 'map-quick-tooltip',
           closeButton: false,
-          maxWidth: '220px',
+          maxWidth: '240px',
           closeOnClick: false,
         })
           .setHTML(`
-            <div style="padding: 8px 12px; font-family: 'Inter', system-ui, -apple-system, sans-serif; background: rgba(0, 0, 0, 0.9); backdrop-blur-md; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
-              <div style="font-weight: 700; font-size: 12px; margin-bottom: 4px; color: ${colorMap[location.type]}; letter-spacing: -0.2px;">${location.name}</div>
-              <div style="font-size: 10px; color: rgba(255, 255, 255, 0.7); margin-bottom: 6px;">${countryData.name}</div>
+            <div style="padding: 10px 14px; font-family: 'Inter', system-ui, -apple-system, sans-serif; background: rgba(255, 255, 255, 0.97); backdrop-filter: blur(12px); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.15), 0 0 0 1px rgba(77, 191, 161, 0.15); border: 1px solid rgba(77, 191, 161, 0.2);">
+              <div style="font-weight: 700; font-size: 13px; margin-bottom: 4px; color: ${colorMap[location.type]}; letter-spacing: -0.2px;">${location.name}</div>
+              <div style="font-size: 11px; color: hsl(176, 39%, 30%); margin-bottom: 6px;">${countryData.name}</div>
               ${location.cultivationArea ? `
-                <div style="display: flex; justify-content: space-between; font-size: 9px; margin-bottom: 3px;">
-                  <span style="color: rgba(255, 255, 255, 0.6);">Area:</span>
-                  <span style="color: white; font-weight: 600;">${location.cultivationArea}</span>
+                <div style="display: flex; justify-content: space-between; font-size: 10px; margin-bottom: 4px;">
+                  <span style="color: hsl(176, 39%, 45%);">Area:</span>
+                  <span style="color: hsl(176, 39%, 20%); font-weight: 600;">${location.cultivationArea}</span>
                 </div>
               ` : ''}
               ${location.productionCapacity ? `
-                <div style="display: flex; justify-content: space-between; font-size: 9px; margin-bottom: 3px;">
-                  <span style="color: rgba(255, 255, 255, 0.6);">Capacity:</span>
-                  <span style="color: white; font-weight: 600;">${location.productionCapacity}</span>
+                <div style="display: flex; justify-content: space-between; font-size: 10px; margin-bottom: 4px;">
+                  <span style="color: hsl(176, 39%, 45%);">Capacity:</span>
+                  <span style="color: hsl(176, 39%, 20%); font-weight: 600;">${location.productionCapacity}</span>
                 </div>
               ` : ''}
               ${location.certifications && location.certifications.length > 0 ? `
-                <div style="margin-top: 6px; padding-top: 6px; border-top: 1px solid rgba(255, 255, 255, 0.1);">
-                  <div style="font-size: 8px; color: rgba(255, 255, 255, 0.5); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 3px;">Certifications</div>
-                  <div style="display: flex; flex-wrap: wrap; gap: 3px;">
+                <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(77, 191, 161, 0.15);">
+                  <div style="font-size: 9px; color: hsl(176, 39%, 45%); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">Certifications</div>
+                  <div style="display: flex; flex-wrap: wrap; gap: 4px;">
                     ${location.certifications.slice(0, 3).map(cert => 
-                      `<span style="display: inline-block; background: ${colorMap[location.type]}; color: white; padding: 2px 6px; border-radius: 4px; font-size: 8px; font-weight: 600;">${cert}</span>`
+                      `<span style="display: inline-block; background: ${colorMap[location.type]}; color: white; padding: 3px 8px; border-radius: 5px; font-size: 9px; font-weight: 600;">${cert}</span>`
                     ).join('')}
                   </div>
                 </div>

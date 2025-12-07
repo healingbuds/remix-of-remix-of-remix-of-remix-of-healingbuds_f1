@@ -220,8 +220,8 @@ const Auth = () => {
         <main className="pt-32 pb-20">
           <div className="container mx-auto px-4 max-w-md">
             <div className="bg-background/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-border/50 overflow-hidden">
-              {/* Header */}
-              <div className="bg-gradient-to-r from-primary/20 to-secondary/20 p-8 text-center">
+              {/* Header - refined emerald-teal gradient */}
+              <div className="bg-gradient-to-br from-[hsl(164,48%,53%)]/15 via-[hsl(178,48%,33%)]/20 to-[hsl(164,48%,53%)]/10 p-8 text-center">
                 <div className="flex justify-center mb-4">
                   <img 
                     src={hbLogoWhite} 

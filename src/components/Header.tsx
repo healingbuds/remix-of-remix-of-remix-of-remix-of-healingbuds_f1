@@ -273,11 +273,11 @@ const Header = ({ onMenuStateChange }: HeaderProps) => {
               <button
                 onClick={() => setEligibilityDialogOpen(true)}
                 className={cn(
-                  "font-body font-semibold px-6 py-2.5 rounded-full transition-all duration-300 hover:scale-105 hover:shadow-2xl",
-                  "backdrop-blur-2xl bg-gradient-to-br from-white/30 via-white/20 to-white/10",
-                  "dark:from-white/20 dark:via-white/10 dark:to-white/5",
-                  "border border-white/40 shadow-lg hover:border-white/60",
-                  "text-white hover:bg-white/30",
+                  "font-body font-semibold px-6 py-2.5 rounded-full transition-all duration-300 hover:scale-105 hover:shadow-2xl relative z-10",
+                  "backdrop-blur-2xl bg-gradient-to-br from-white/35 via-white/25 to-white/15",
+                  "dark:from-white/25 dark:via-white/15 dark:to-white/10",
+                  "border border-white/50 shadow-lg hover:border-white/70",
+                  "text-white hover:bg-white/35",
                   scrolled ? "text-sm" : "text-sm"
                 )}
               >
@@ -287,11 +287,11 @@ const Header = ({ onMenuStateChange }: HeaderProps) => {
                 <button
                   onClick={handleLogout}
                   className={cn(
-                    "font-body font-semibold px-6 py-2.5 rounded-full transition-all duration-300 hover:scale-105 hover:shadow-2xl",
-                    "backdrop-blur-2xl bg-gradient-to-br from-white/20 via-white/15 to-white/10",
-                    "dark:from-white/15 dark:via-white/10 dark:to-white/5",
-                    "border border-white/30 shadow-lg hover:border-white/50",
-                    "text-white hover:bg-white/25 flex items-center gap-2",
+                    "font-body font-semibold px-6 py-2.5 rounded-full transition-all duration-300 hover:scale-105 hover:shadow-2xl relative z-10",
+                    "backdrop-blur-2xl bg-gradient-to-br from-white/25 via-white/18 to-white/12",
+                    "dark:from-white/20 dark:via-white/12 dark:to-white/8",
+                    "border border-white/40 shadow-lg hover:border-white/60",
+                    "text-white hover:bg-white/30 flex items-center gap-2",
                     scrolled ? "text-sm" : "text-sm"
                   )}
                 >
@@ -302,11 +302,11 @@ const Header = ({ onMenuStateChange }: HeaderProps) => {
                 <Link
                   to="/auth"
                   className={cn(
-                    "font-body font-semibold px-6 py-2.5 rounded-full transition-all duration-300 hover:scale-105 hover:shadow-2xl",
-                    "backdrop-blur-2xl bg-gradient-to-br from-white/20 via-white/15 to-white/10",
-                    "dark:from-white/15 dark:via-white/10 dark:to-white/5",
-                    "border border-white/30 shadow-lg hover:border-white/50",
-                    "text-white hover:bg-white/25",
+                    "font-body font-semibold px-6 py-2.5 rounded-full transition-all duration-300 hover:scale-105 hover:shadow-2xl relative z-10",
+                    "backdrop-blur-2xl bg-gradient-to-br from-white/25 via-white/18 to-white/12",
+                    "dark:from-white/20 dark:via-white/12 dark:to-white/8",
+                    "border border-white/40 shadow-lg hover:border-white/60",
+                    "text-white hover:bg-white/30",
                     scrolled ? "text-sm" : "text-sm"
                   )}
                 >
@@ -472,14 +472,14 @@ const Header = ({ onMenuStateChange }: HeaderProps) => {
                         setEligibilityDialogOpen(true);
                         setMobileMenuOpen(false);
                       }}
-                      className="w-full font-body font-semibold px-6 py-4 rounded-2xl transition-all duration-300 ease-out active:scale-[0.96] shadow-lg backdrop-blur-2xl bg-gradient-to-br from-white/30 via-white/20 to-white/10 border border-white/40 text-white text-sm hover:from-white/40 hover:via-white/30 hover:to-white/20 hover:border-white/60 hover:shadow-xl focus-ring"
+                      className="w-full font-body font-semibold px-6 py-4 rounded-2xl transition-all duration-300 ease-out active:scale-[0.96] shadow-lg backdrop-blur-2xl bg-gradient-to-br from-white/35 via-white/25 to-white/15 border border-white/50 text-white text-sm hover:from-white/45 hover:via-white/35 hover:to-white/25 hover:border-white/70 hover:shadow-xl focus-ring"
                     >
                       {t('nav.checkEligibility')}
                     </button>
                     {user ? (
                       <button
                         onClick={handleLogout}
-                        className="w-full font-body font-semibold px-6 py-4 rounded-2xl transition-all duration-300 ease-out active:scale-[0.96] shadow-lg backdrop-blur-2xl bg-gradient-to-br from-white/20 via-white/15 to-white/10 border border-white/30 text-white text-sm flex items-center justify-center gap-2 hover:from-white/30 hover:via-white/25 hover:to-white/20 hover:border-white/50 hover:shadow-xl focus-ring"
+                        className="w-full font-body font-semibold px-6 py-4 rounded-2xl transition-all duration-300 ease-out active:scale-[0.96] shadow-lg backdrop-blur-2xl bg-gradient-to-br from-white/25 via-white/18 to-white/12 border border-white/40 text-white text-sm flex items-center justify-center gap-2 hover:from-white/35 hover:via-white/28 hover:to-white/22 hover:border-white/60 hover:shadow-xl focus-ring"
                       >
                         <LogOut className="w-4 h-4" />
                         {t('nav.signOut')}
@@ -488,7 +488,7 @@ const Header = ({ onMenuStateChange }: HeaderProps) => {
                       <Link
                         to="/auth"
                         onClick={() => setMobileMenuOpen(false)}
-                        className="block w-full text-center font-body font-semibold px-6 py-4 rounded-2xl transition-all duration-300 ease-out active:scale-[0.96] shadow-lg backdrop-blur-2xl bg-gradient-to-br from-white/20 via-white/15 to-white/10 border border-white/30 text-white text-sm hover:from-white/30 hover:via-white/25 hover:to-white/20 hover:border-white/50 hover:shadow-xl focus-ring"
+                        className="block w-full text-center font-body font-semibold px-6 py-4 rounded-2xl transition-all duration-300 ease-out active:scale-[0.96] shadow-lg backdrop-blur-2xl bg-gradient-to-br from-white/25 via-white/18 to-white/12 border border-white/40 text-white text-sm hover:from-white/35 hover:via-white/28 hover:to-white/22 hover:border-white/60 hover:shadow-xl focus-ring"
                       >
                         {t('nav.patientLogin')}
                       </Link>

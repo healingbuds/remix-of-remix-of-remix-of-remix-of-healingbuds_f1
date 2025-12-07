@@ -74,14 +74,14 @@ const Hero = () => {
             <span className="block mt-3">{t('hero.healingBuds')}</span>
           </motion.h1>
           
-          {/* Transparent logo overlay - subtle without pulsing */}
+          {/* Transparent logo overlay - repositioned upward to show full shape */}
           <motion.img 
             initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 0.15, scale: 1 }}
+            animate={{ opacity: 0.12, scale: 1 }}
             transition={{ duration: 1, delay: 0.5, ease: [0.25, 0.4, 0.25, 1] }}
             src={hbLogoSquare} 
             alt="" 
-            className="hidden md:block absolute right-0 md:right-8 lg:right-20 top-[30%] -translate-y-1/2 w-[380px] md:w-[480px] lg:w-[560px] h-auto pointer-events-none"
+            className="hidden md:block absolute right-0 md:right-8 lg:right-20 top-[15%] -translate-y-1/4 w-[380px] md:w-[480px] lg:w-[560px] h-auto pointer-events-none"
           />
           
           <motion.p 
