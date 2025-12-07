@@ -17,6 +17,8 @@ const Hero = () => {
   
   const videoY = useTransform(scrollYProgress, [0, 1], ["0%", "30%"]);
   const contentY = useTransform(scrollYProgress, [0, 1], ["0%", "50%"]);
+  const logoY = useTransform(scrollYProgress, [0, 1], ["0%", "20%"]);
+  const logoScale = useTransform(scrollYProgress, [0, 0.5], [1, 1.1]);
   const opacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
 
   React.useEffect(() => {
@@ -74,14 +76,15 @@ const Hero = () => {
             <span className="block mt-3">{t('hero.healingBuds')}</span>
           </motion.h1>
           
-          {/* Transparent logo overlay - moved higher to be fully visible */}
+          {/* Transparent logo overlay with parallax */}
           <motion.img 
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 0.15, scale: 1 }}
+            style={{ y: logoY, scale: logoScale }}
             transition={{ duration: 1, delay: 0.5, ease: [0.25, 0.4, 0.25, 1] }}
             src={hbLogoSquare} 
             alt="" 
-            className="hidden md:block absolute right-0 md:right-8 lg:right-20 top-1/2 -translate-y-1/2 w-[280px] md:w-[340px] lg:w-[420px] h-auto pointer-events-none"
+            className="hidden md:block absolute right-0 md:right-8 lg:right-20 top-1/2 -translate-y-1/2 w-[280px] md:w-[340px] lg:w-[420px] h-auto pointer-events-none origin-center"
           />
           
           <motion.p 
