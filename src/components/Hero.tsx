@@ -81,7 +81,7 @@ const Hero = () => {
             transition={{ duration: 1, delay: 0.5, ease: [0.25, 0.4, 0.25, 1] }}
             src={hbLogoSquare} 
             alt="" 
-            className="hidden md:block absolute right-0 md:right-8 lg:right-20 top-0 -translate-y-[15%] w-[340px] md:w-[420px] lg:w-[500px] h-auto pointer-events-none"
+            className="hidden md:block absolute right-0 md:right-8 lg:right-20 top-1/2 -translate-y-1/2 w-[280px] md:w-[340px] lg:w-[420px] h-auto pointer-events-none"
           />
           
           <motion.p 
