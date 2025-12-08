@@ -226,7 +226,7 @@ const InteractiveMap = ({ selectedCountry, onCountrySelect }: InteractiveMapProp
           id: 'brand-overlay',
           type: 'background',
           paint: {
-            'background-color': 'hsl(72, 47%, 53%)', // Sage green overlay (#a2b756)
+            'background-color': '#a2b756', // Uses --map-sage token color
             'background-opacity': 0.06
           }
         }
@@ -401,14 +401,21 @@ const InteractiveMap = ({ selectedCountry, onCountrySelect }: InteractiveMapProp
         el.style.transition = 'all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)';
         el.style.boxShadow = '0 4px 20px rgba(0,0,0,0.15), 0 1px 3px rgba(0,0,0,0.1), 0 0 0 3px white';
         
-        // Olive-based color palette for markers
+        // Sage green color palette for markers - using CSS tokens
         const colorMap: Record<LocationType, string> = {
-          'operations-sales': '#a2b756',   // Primary sage green
-          'export-only': '#b8c97a',        // Light sage
-          'operations-only': '#8a9e48',    // Dark sage
+          'operations-sales': 'hsl(var(--map-sage))',        // Primary sage green
+          'export-only': 'hsl(var(--map-sage-light))',       // Light sage
+          'operations-only': 'hsl(var(--map-sage-dark))',    // Dark sage
         };
         
-        el.style.backgroundColor = colorMap[location.type];
+        // Fallback hex colors for inline styles that don't support CSS variables
+        const hexColorMap: Record<LocationType, string> = {
+          'operations-sales': '#a2b756',
+          'export-only': '#b8c97a',
+          'operations-only': '#8a9e48',
+        };
+        
+        el.style.backgroundColor = hexColorMap[location.type];
         
         // Staggered entrance animation
         setTimeout(() => {

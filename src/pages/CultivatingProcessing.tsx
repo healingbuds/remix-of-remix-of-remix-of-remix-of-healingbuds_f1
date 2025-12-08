@@ -15,7 +15,7 @@ import productionFacility from "@/assets/production-facility-hq.jpg";
 import researchLab from "@/assets/research-lab-hq.jpg";
 
 const CultivatingProcessing = () => {
-  const [activeTab, setActiveTab] = useState<"southafrica" | "uk" | "thailand">("southafrica");
+  const [activeTab, setActiveTab] = useState<"southafrica" | "uk" | "thailand" | "portugal">("southafrica");
   const [expandedItem, setExpandedItem] = useState<string | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const heroRef = useRef<HTMLDivElement>(null);
@@ -279,6 +279,16 @@ const CultivatingProcessing = () => {
                   >
                     United Kingdom
                   </button>
+                  <button
+                    onClick={() => setActiveTab("portugal")}
+                    className={`px-6 md:px-8 py-2.5 font-medium transition-all duration-200 rounded-lg ${
+                      activeTab === "portugal"
+                        ? "text-foreground bg-foreground/5"
+                        : "text-muted-foreground hover:text-foreground hover:bg-foreground/5"
+                    }`}
+                  >
+                    Portugal
+                  </button>
                 </div>
               </ScrollAnimation>
 
@@ -346,6 +356,34 @@ const CultivatingProcessing = () => {
                       <img 
                         src={indoorCultivation} 
                         alt="UK cultivation facility" 
+                        className="w-full h-64 md:h-96 object-cover hover:scale-105 transition-transform duration-500 ease-out"
+                      />
+                    </div>
+                  </div>
+                </ScrollAnimation>
+              )}
+
+              {activeTab === "portugal" && (
+                <ScrollAnimation>
+                  <div className="grid md:grid-cols-2 gap-12 md:gap-16 items-center max-w-6xl mx-auto">
+                    <div className="order-2 md:order-1 space-y-6">
+                      <h3 className="text-3xl md:text-4xl lg:text-5xl font-semibold text-foreground tracking-tight">Portugal</h3>
+                      <p className="text-base md:text-lg text-muted-foreground/80 leading-relaxed">
+                        Portugal serves as our main production, processing, and shipping hub for European markets. With EU-GMP certification and strategic location for continental distribution, the Portuguese facility is positioned to become the backbone of our European operations. Following the UK launch, Portugal will go fully live, providing seamless access to EU markets with premium medical cannabis products manufactured to the highest pharmaceutical standards.
+                      </p>
+                      <div className="flex items-center gap-2">
+                        <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300">
+                          Coming Soon
+                        </span>
+                        <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary dark:bg-primary/20">
+                          EU Hub
+                        </span>
+                      </div>
+                    </div>
+                    <div className="rounded-xl overflow-hidden shadow-card order-1 md:order-2 border border-border/30 hover-lift">
+                      <img 
+                        src={productionFacility} 
+                        alt="Portugal EU production hub" 
                         className="w-full h-64 md:h-96 object-cover hover:scale-105 transition-transform duration-500 ease-out"
                       />
                     </div>
