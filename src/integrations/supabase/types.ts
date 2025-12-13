@@ -14,6 +14,75 @@ export type Database = {
   }
   public: {
     Tables: {
+      drgreen_cart: {
+        Row: {
+          created_at: string
+          id: string
+          quantity: number
+          strain_id: string
+          strain_name: string
+          unit_price: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          quantity?: number
+          strain_id: string
+          strain_name: string
+          unit_price: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          quantity?: number
+          strain_id?: string
+          strain_name?: string
+          unit_price?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      drgreen_clients: {
+        Row: {
+          admin_approval: string | null
+          country_code: string
+          created_at: string
+          drgreen_client_id: string
+          id: string
+          is_kyc_verified: boolean | null
+          kyc_link: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          admin_approval?: string | null
+          country_code?: string
+          created_at?: string
+          drgreen_client_id: string
+          id?: string
+          is_kyc_verified?: boolean | null
+          kyc_link?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          admin_approval?: string | null
+          country_code?: string
+          created_at?: string
+          drgreen_client_id?: string
+          id?: string
+          is_kyc_verified?: boolean | null
+          kyc_link?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null

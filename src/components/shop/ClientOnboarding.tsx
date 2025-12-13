@@ -1,0 +1,653 @@
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
+import { z } from 'zod';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import {
+  User,
+  MapPin,
+  Stethoscope,
+  CheckCircle2,
+  ArrowRight,
+  ArrowLeft,
+  Loader2,
+} from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { useShop } from '@/context/ShopContext';
+
+const personalDetailsSchema = z.object({
+  firstName: z.string().min(2, 'First name must be at least 2 characters'),
+  lastName: z.string().min(2, 'Last name must be at least 2 characters'),
+  email: z.string().email('Invalid email address'),
+  phone: z.string().min(10, 'Phone number must be at least 10 digits'),
+  dateOfBirth: z.string().min(1, 'Date of birth is required'),
+});
+
+const addressSchema = z.object({
+  street: z.string().min(5, 'Street address is required'),
+  city: z.string().min(2, 'City is required'),
+  postalCode: z.string().min(4, 'Postal code is required'),
+  country: z.string().min(2, 'Country is required'),
+});
+
+const medicalSchema = z.object({
+  conditions: z.string().min(10, 'Please describe your medical conditions'),
+  currentMedications: z.string().optional(),
+  allergies: z.string().optional(),
+  previousCannabisUse: z.boolean(),
+  doctorApproval: z.boolean(),
+  consent: z.boolean().refine((val) => val, 'You must consent to continue'),
+});
+
+type PersonalDetails = z.infer<typeof personalDetailsSchema>;
+type Address = z.infer<typeof addressSchema>;
+type Medical = z.infer<typeof medicalSchema>;
+
+const steps = [
+  { id: 'personal', title: 'Personal Details', icon: User },
+  { id: 'address', title: 'Shipping Address', icon: MapPin },
+  { id: 'medical', title: 'Medical Information', icon: Stethoscope },
+  { id: 'complete', title: 'Complete', icon: CheckCircle2 },
+];
+
+const countries = [
+  { code: 'PT', name: 'Portugal' },
+  { code: 'ZA', name: 'South Africa' },
+  { code: 'TH', name: 'Thailand' },
+  { code: 'GB', name: 'United Kingdom' },
+];
+
+export function ClientOnboarding() {
+  const [currentStep, setCurrentStep] = useState(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formData, setFormData] = useState<{
+    personal?: PersonalDetails;
+    address?: Address;
+    medical?: Medical;
+  }>({});
+  const { toast } = useToast();
+  const navigate = useNavigate();
+  const { refreshClient } = useShop();
+
+  const personalForm = useForm<PersonalDetails>({
+    resolver: zodResolver(personalDetailsSchema),
+    defaultValues: formData.personal || {
+      firstName: '',
+      lastName: '',
+      email: '',
+      phone: '',
+      dateOfBirth: '',
+    },
+  });
+
+  const addressForm = useForm<Address>({
+    resolver: zodResolver(addressSchema),
+    defaultValues: formData.address || {
+      street: '',
+      city: '',
+      postalCode: '',
+      country: 'PT',
+    },
+  });
+
+  const medicalForm = useForm<Medical>({
+    resolver: zodResolver(medicalSchema),
+    defaultValues: formData.medical || {
+      conditions: '',
+      currentMedications: '',
+      allergies: '',
+      previousCannabisUse: false,
+      doctorApproval: false,
+      consent: false,
+    },
+  });
+
+  const handlePersonalSubmit = (data: PersonalDetails) => {
+    setFormData((prev) => ({ ...prev, personal: data }));
+    setCurrentStep(1);
+  };
+
+  const handleAddressSubmit = (data: Address) => {
+    setFormData((prev) => ({ ...prev, address: data }));
+    setCurrentStep(2);
+  };
+
+  const handleMedicalSubmit = async (data: Medical) => {
+    setFormData((prev) => ({ ...prev, medical: data }));
+    setIsSubmitting(true);
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast({
+          title: 'Authentication required',
+          description: 'Please sign in to continue.',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      // Call edge function to create client
+      const { data: result, error } = await supabase.functions.invoke('drgreen-proxy', {
+        body: {
+          action: 'create-client',
+          data: {
+            personal: formData.personal,
+            address: formData.address,
+            medicalRecord: data,
+          },
+        },
+      });
+
+      if (error) throw error;
+
+      // Store client info locally
+      const { error: dbError } = await supabase.from('drgreen_clients').insert({
+        user_id: user.id,
+        drgreen_client_id: result.clientId || `mock-${Date.now()}`,
+        country_code: formData.address?.country || 'PT',
+        is_kyc_verified: false,
+        admin_approval: 'PENDING',
+        kyc_link: result.kycLink || null,
+      });
+
+      if (dbError) throw dbError;
+
+      await refreshClient();
+      setCurrentStep(3);
+
+      toast({
+        title: 'Registration submitted',
+        description: 'Please complete KYC verification to continue.',
+      });
+    } catch (error: any) {
+      console.error('Registration error:', error);
+      toast({
+        title: 'Registration failed',
+        description: error.message || 'Please try again later.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const goBack = () => {
+    if (currentStep > 0) setCurrentStep(currentStep - 1);
+  };
+
+  return (
+    <div className="max-w-2xl mx-auto py-8 px-4">
+      {/* Progress indicator */}
+      <div className="mb-8">
+        <div className="flex justify-between">
+          {steps.map((step, index) => (
+            <div
+              key={step.id}
+              className={`flex flex-col items-center ${
+                index <= currentStep ? 'text-primary' : 'text-muted-foreground'
+              }`}
+            >
+              <div
+                className={`h-10 w-10 rounded-full flex items-center justify-center mb-2 ${
+                  index < currentStep
+                    ? 'bg-primary text-primary-foreground'
+                    : index === currentStep
+                    ? 'bg-primary/20 text-primary border-2 border-primary'
+                    : 'bg-muted text-muted-foreground'
+                }`}
+              >
+                {index < currentStep ? (
+                  <CheckCircle2 className="h-5 w-5" />
+                ) : (
+                  <step.icon className="h-5 w-5" />
+                )}
+              </div>
+              <span className="text-xs hidden sm:block">{step.title}</span>
+            </div>
+          ))}
+        </div>
+        <div className="relative mt-2">
+          <div className="absolute h-1 bg-muted w-full rounded" />
+          <motion.div
+            className="absolute h-1 bg-primary rounded"
+            initial={{ width: '0%' }}
+            animate={{ width: `${(currentStep / (steps.length - 1)) * 100}%` }}
+            transition={{ duration: 0.3 }}
+          />
+        </div>
+      </div>
+
+      <AnimatePresence mode="wait">
+        {/* Step 1: Personal Details */}
+        {currentStep === 0 && (
+          <motion.div
+            key="personal"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+          >
+            <Card className="bg-card/50 backdrop-blur-sm border-border/50">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <User className="h-5 w-5" />
+                  Personal Details
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Form {...personalForm}>
+                  <form
+                    onSubmit={personalForm.handleSubmit(handlePersonalSubmit)}
+                    className="space-y-4"
+                  >
+                    <div className="grid grid-cols-2 gap-4">
+                      <FormField
+                        control={personalForm.control}
+                        name="firstName"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>First Name</FormLabel>
+                            <FormControl>
+                              <Input placeholder="John" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={personalForm.control}
+                        name="lastName"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Last Name</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Doe" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    <FormField
+                      control={personalForm.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Email</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="email"
+                              placeholder="john@example.com"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={personalForm.control}
+                      name="phone"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Phone Number</FormLabel>
+                          <FormControl>
+                            <Input placeholder="+351 123 456 789" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={personalForm.control}
+                      name="dateOfBirth"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Date of Birth</FormLabel>
+                          <FormControl>
+                            <Input type="date" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <Button type="submit" className="w-full">
+                      Continue
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  </form>
+                </Form>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
+
+        {/* Step 2: Address */}
+        {currentStep === 1 && (
+          <motion.div
+            key="address"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+          >
+            <Card className="bg-card/50 backdrop-blur-sm border-border/50">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <MapPin className="h-5 w-5" />
+                  Shipping Address
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Form {...addressForm}>
+                  <form
+                    onSubmit={addressForm.handleSubmit(handleAddressSubmit)}
+                    className="space-y-4"
+                  >
+                    <FormField
+                      control={addressForm.control}
+                      name="country"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Country</FormLabel>
+                          <Select
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select country" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {countries.map((country) => (
+                                <SelectItem key={country.code} value={country.code}>
+                                  {country.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={addressForm.control}
+                      name="street"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Street Address</FormLabel>
+                          <FormControl>
+                            <Input placeholder="123 Main Street" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <div className="grid grid-cols-2 gap-4">
+                      <FormField
+                        control={addressForm.control}
+                        name="city"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>City</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Lisbon" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={addressForm.control}
+                        name="postalCode"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Postal Code</FormLabel>
+                            <FormControl>
+                              <Input placeholder="1000-001" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    <div className="flex gap-3">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={goBack}
+                        className="flex-1"
+                      >
+                        <ArrowLeft className="mr-2 h-4 w-4" />
+                        Back
+                      </Button>
+                      <Button type="submit" className="flex-1">
+                        Continue
+                        <ArrowRight className="ml-2 h-4 w-4" />
+                      </Button>
+                    </div>
+                  </form>
+                </Form>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
+
+        {/* Step 3: Medical Information */}
+        {currentStep === 2 && (
+          <motion.div
+            key="medical"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+          >
+            <Card className="bg-card/50 backdrop-blur-sm border-border/50">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Stethoscope className="h-5 w-5" />
+                  Medical Information
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Form {...medicalForm}>
+                  <form
+                    onSubmit={medicalForm.handleSubmit(handleMedicalSubmit)}
+                    className="space-y-4"
+                  >
+                    <FormField
+                      control={medicalForm.control}
+                      name="conditions"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Medical Conditions</FormLabel>
+                          <FormControl>
+                            <Textarea
+                              placeholder="Describe your medical conditions that you're seeking treatment for..."
+                              className="min-h-[100px]"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={medicalForm.control}
+                      name="currentMedications"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Current Medications (Optional)</FormLabel>
+                          <FormControl>
+                            <Textarea
+                              placeholder="List any medications you're currently taking..."
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={medicalForm.control}
+                      name="allergies"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Allergies (Optional)</FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="List any known allergies..."
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={medicalForm.control}
+                      name="previousCannabisUse"
+                      render={({ field }) => (
+                        <FormItem className="flex items-start space-x-3 space-y-0">
+                          <FormControl>
+                            <Checkbox
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
+                          <FormLabel className="font-normal">
+                            I have previous experience with medical cannabis
+                          </FormLabel>
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={medicalForm.control}
+                      name="doctorApproval"
+                      render={({ field }) => (
+                        <FormItem className="flex items-start space-x-3 space-y-0">
+                          <FormControl>
+                            <Checkbox
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
+                          <FormLabel className="font-normal">
+                            I have discussed medical cannabis with my healthcare provider
+                          </FormLabel>
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={medicalForm.control}
+                      name="consent"
+                      render={({ field }) => (
+                        <FormItem className="flex items-start space-x-3 space-y-0 p-4 bg-muted/30 rounded-lg">
+                          <FormControl>
+                            <Checkbox
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
+                          <div className="space-y-1">
+                            <FormLabel className="font-normal">
+                              I consent to the processing of my medical information
+                            </FormLabel>
+                            <p className="text-xs text-muted-foreground">
+                              Your information will be handled in accordance with GDPR
+                              and medical data protection regulations.
+                            </p>
+                          </div>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <div className="flex gap-3">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={goBack}
+                        className="flex-1"
+                        disabled={isSubmitting}
+                      >
+                        <ArrowLeft className="mr-2 h-4 w-4" />
+                        Back
+                      </Button>
+                      <Button
+                        type="submit"
+                        className="flex-1"
+                        disabled={isSubmitting}
+                      >
+                        {isSubmitting ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Submitting...
+                          </>
+                        ) : (
+                          <>
+                            Submit
+                            <ArrowRight className="ml-2 h-4 w-4" />
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  </form>
+                </Form>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
+
+        {/* Step 4: Complete */}
+        {currentStep === 3 && (
+          <motion.div
+            key="complete"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+          >
+            <Card className="bg-card/50 backdrop-blur-sm border-border/50 text-center">
+              <CardContent className="pt-8 pb-8">
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ type: 'spring', delay: 0.2 }}
+                  className="h-20 w-20 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-6"
+                >
+                  <CheckCircle2 className="h-10 w-10 text-primary" />
+                </motion.div>
+                <h2 className="text-2xl font-bold mb-2">Registration Submitted!</h2>
+                <p className="text-muted-foreground mb-6">
+                  Your application is being reviewed. You'll receive an email with KYC instructions shortly.
+                </p>
+                <Button onClick={() => navigate('/shop')}>
+                  Return to Shop
+                </Button>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
