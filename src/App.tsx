@@ -11,6 +11,8 @@ import RouteProgress from "@/components/RouteProgress";
 import CursorFollower from "@/components/CursorFollower";
 import PageLoadingSkeleton from "@/components/PageLoadingSkeleton";
 
+import { ShopProvider } from "@/context/ShopContext";
+
 // Lazy load pages for better performance
 const Index = lazy(() => import("./pages/Index"));
 const WhatWeDo = lazy(() => import("./pages/WhatWeDo"));
@@ -30,6 +32,8 @@ const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
 const TermsOfService = lazy(() => import("./pages/TermsOfService"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const Auth = lazy(() => import("./pages/Auth"));
+const Shop = lazy(() => import("./pages/Shop"));
+const ShopRegister = lazy(() => import("./pages/ShopRegister"));
 
 const queryClient = new QueryClient();
 
@@ -42,6 +46,8 @@ const AnimatedRoutes = () => {
         <Routes location={location} key={location.pathname}>
           <Route path="/" element={<Index />} />
           <Route path="/auth" element={<Auth />} />
+          <Route path="/shop" element={<Shop />} />
+          <Route path="/shop/register" element={<ShopRegister />} />
           <Route path="/what-we-do" element={<WhatWeDo />} />
           <Route path="/cultivating-processing" element={<CultivatingProcessing />} />
           <Route path="/manufacture-distribution" element={<ManufactureDistribution />} />
@@ -69,15 +75,17 @@ const App = () => (
   <ThemeProvider defaultTheme="dark" storageKey="healing-buds-theme">
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <CursorFollower>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <ScrollToTop />
-            <RouteProgress />
-            <AnimatedRoutes />
-          </BrowserRouter>
-        </CursorFollower>
+        <ShopProvider>
+          <CursorFollower>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <ScrollToTop />
+              <RouteProgress />
+              <AnimatedRoutes />
+            </BrowserRouter>
+          </CursorFollower>
+        </ShopProvider>
       </TooltipProvider>
     </QueryClientProvider>
   </ThemeProvider>

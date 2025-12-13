@@ -1,0 +1,245 @@
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
+
+interface CartItem {
+  id: string;
+  strain_id: string;
+  strain_name: string;
+  quantity: number;
+  unit_price: number;
+}
+
+interface DrGreenClient {
+  id: string;
+  user_id: string;
+  drgreen_client_id: string;
+  country_code: string;
+  is_kyc_verified: boolean;
+  admin_approval: string;
+  kyc_link: string | null;
+}
+
+interface ShopContextType {
+  cart: CartItem[];
+  cartCount: number;
+  cartTotal: number;
+  isCartOpen: boolean;
+  setIsCartOpen: (open: boolean) => void;
+  addToCart: (item: Omit<CartItem, 'id'>) => Promise<void>;
+  removeFromCart: (strainId: string) => Promise<void>;
+  updateQuantity: (strainId: string, quantity: number) => Promise<void>;
+  clearCart: () => Promise<void>;
+  drGreenClient: DrGreenClient | null;
+  isEligible: boolean;
+  isLoading: boolean;
+  refreshClient: () => Promise<void>;
+  countryCode: string;
+  setCountryCode: (code: string) => void;
+}
+
+const ShopContext = createContext<ShopContextType | undefined>(undefined);
+
+export function ShopProvider({ children }: { children: React.ReactNode }) {
+  const [cart, setCart] = useState<CartItem[]>([]);
+  const [isCartOpen, setIsCartOpen] = useState(false);
+  const [drGreenClient, setDrGreenClient] = useState<DrGreenClient | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [countryCode, setCountryCode] = useState('PT');
+  const { toast } = useToast();
+
+  const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+  const cartTotal = cart.reduce((sum, item) => sum + item.quantity * item.unit_price, 0);
+  const isEligible = drGreenClient?.is_kyc_verified === true && drGreenClient?.admin_approval === 'VERIFIED';
+
+  const fetchCart = useCallback(async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      setCart([]);
+      return;
+    }
+
+    const { data, error } = await supabase
+      .from('drgreen_cart')
+      .select('*')
+      .eq('user_id', user.id);
+
+    if (error) {
+      console.error('Error fetching cart:', error);
+      return;
+    }
+
+    setCart(data || []);
+  }, []);
+
+  const fetchClient = useCallback(async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      setDrGreenClient(null);
+      setIsLoading(false);
+      return;
+    }
+
+    const { data, error } = await supabase
+      .from('drgreen_clients')
+      .select('*')
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    if (error) {
+      console.error('Error fetching client:', error);
+    }
+
+    setDrGreenClient(data);
+    if (data?.country_code) {
+      setCountryCode(data.country_code);
+    }
+    setIsLoading(false);
+  }, []);
+
+  const refreshClient = useCallback(async () => {
+    await fetchClient();
+  }, [fetchClient]);
+
+  useEffect(() => {
+    fetchCart();
+    fetchClient();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
+      fetchCart();
+      fetchClient();
+    });
+
+    return () => subscription.unsubscribe();
+  }, [fetchCart, fetchClient]);
+
+  const addToCart = async (item: Omit<CartItem, 'id'>) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      toast({
+        title: "Authentication required",
+        description: "Please sign in to add items to your cart.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const { error } = await supabase
+      .from('drgreen_cart')
+      .upsert({
+        user_id: user.id,
+        strain_id: item.strain_id,
+        strain_name: item.strain_name,
+        quantity: item.quantity,
+        unit_price: item.unit_price,
+      }, {
+        onConflict: 'user_id,strain_id',
+      });
+
+    if (error) {
+      console.error('Error adding to cart:', error);
+      toast({
+        title: "Error",
+        description: "Failed to add item to cart.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    await fetchCart();
+    toast({
+      title: "Added to cart",
+      description: `${item.strain_name} added to your cart.`,
+    });
+  };
+
+  const removeFromCart = async (strainId: string) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { error } = await supabase
+      .from('drgreen_cart')
+      .delete()
+      .eq('user_id', user.id)
+      .eq('strain_id', strainId);
+
+    if (error) {
+      console.error('Error removing from cart:', error);
+      return;
+    }
+
+    await fetchCart();
+  };
+
+  const updateQuantity = async (strainId: string, quantity: number) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    if (quantity <= 0) {
+      await removeFromCart(strainId);
+      return;
+    }
+
+    const { error } = await supabase
+      .from('drgreen_cart')
+      .update({ quantity })
+      .eq('user_id', user.id)
+      .eq('strain_id', strainId);
+
+    if (error) {
+      console.error('Error updating quantity:', error);
+      return;
+    }
+
+    await fetchCart();
+  };
+
+  const clearCart = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { error } = await supabase
+      .from('drgreen_cart')
+      .delete()
+      .eq('user_id', user.id);
+
+    if (error) {
+      console.error('Error clearing cart:', error);
+      return;
+    }
+
+    setCart([]);
+  };
+
+  return (
+    <ShopContext.Provider
+      value={{
+        cart,
+        cartCount,
+        cartTotal,
+        isCartOpen,
+        setIsCartOpen,
+        addToCart,
+        removeFromCart,
+        updateQuantity,
+        clearCart,
+        drGreenClient,
+        isEligible,
+        isLoading,
+        refreshClient,
+        countryCode,
+        setCountryCode,
+      }}
+    >
+      {children}
+    </ShopContext.Provider>
+  );
+}
+
+export function useShop() {
+  const context = useContext(ShopContext);
+  if (context === undefined) {
+    throw new Error('useShop must be used within a ShopProvider');
+  }
+  return context;
+}
