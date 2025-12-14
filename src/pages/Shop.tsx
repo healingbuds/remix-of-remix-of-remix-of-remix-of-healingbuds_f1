@@ -8,6 +8,7 @@ import { ProductGrid } from '@/components/shop/ProductGrid';
 import { Cart } from '@/components/shop/Cart';
 import { CartButton } from '@/components/shop/CartButton';
 import { RestrictedRegionGate } from '@/components/shop/RestrictedRegionGate';
+import { VerificationProgress } from '@/components/shop/VerificationProgress';
 import { useShop } from '@/context/ShopContext';
 import { useGeoLocation } from '@/hooks/useGeoLocation';
 import { useTranslation } from 'react-i18next';
@@ -89,32 +90,66 @@ export default function Shop() {
                 {t('subtitle')}
               </p>
 
-              {/* Eligibility status */}
-              {drGreenClient && (
+              {/* Eligibility status - Verified badge with glow */}
+              {drGreenClient && isEligible && (
                 <motion.div
                   initial={{ opacity: 0, scale: 0.9, y: 10 }}
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   transition={{ type: "spring", stiffness: 200, damping: 20 }}
-                  className={`inline-flex items-center gap-3 px-5 py-3 rounded-xl text-sm font-medium shadow-lg ${
-                    isEligible
-                      ? 'bg-gradient-to-r from-primary/20 via-primary/15 to-primary/20 text-primary border-2 border-primary/40 shadow-primary/20'
-                      : 'bg-gradient-to-r from-yellow-500/20 via-yellow-500/15 to-yellow-500/20 text-yellow-600 dark:text-yellow-500 border-2 border-yellow-500/40 shadow-yellow-500/20'
-                  }`}
+                  className="relative inline-flex items-center gap-3 px-6 py-3.5 rounded-xl text-sm font-semibold"
+                >
+                  {/* Outer glow pulse */}
+                  <motion.div
+                    className="absolute inset-0 rounded-xl bg-gradient-to-r from-primary via-primary/80 to-primary"
+                    animate={{
+                      boxShadow: [
+                        '0 0 20px 0px hsl(var(--primary) / 0.4)',
+                        '0 0 40px 8px hsl(var(--primary) / 0.6)',
+                        '0 0 20px 0px hsl(var(--primary) / 0.4)',
+                      ],
+                    }}
+                    transition={{ repeat: Infinity, duration: 2, ease: 'easeInOut' }}
+                  />
+                  {/* Inner content */}
+                  <div className="relative z-10 flex items-center gap-3 text-primary-foreground">
+                    <motion.div
+                      animate={{ 
+                        scale: [1, 1.2, 1],
+                        rotate: [0, 5, -5, 0],
+                      }}
+                      transition={{ repeat: Infinity, duration: 2.5, ease: 'easeInOut' }}
+                      className="p-1.5 rounded-lg bg-white/20 backdrop-blur-sm"
+                    >
+                      <ShieldCheck className="h-5 w-5" />
+                    </motion.div>
+                    <span className="tracking-wide uppercase text-xs font-bold">
+                      Verified Medical Patient
+                    </span>
+                  </div>
+                </motion.div>
+              )}
+
+              {/* Pending verification status */}
+              {drGreenClient && !isEligible && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9, y: 10 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  transition={{ type: "spring", stiffness: 200, damping: 20 }}
+                  className="inline-flex items-center gap-3 px-5 py-3 rounded-xl text-sm font-medium shadow-lg bg-gradient-to-r from-yellow-500/20 via-yellow-500/15 to-yellow-500/20 text-yellow-600 dark:text-yellow-500 border-2 border-yellow-500/40 shadow-yellow-500/20"
                 >
                   <motion.div
-                    animate={isEligible ? { scale: [1, 1.15, 1] } : {}}
-                    transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
-                    className={`p-1.5 rounded-lg ${isEligible ? 'bg-primary/20' : 'bg-yellow-500/20'}`}
+                    animate={{ rotate: [0, 360] }}
+                    transition={{ repeat: Infinity, duration: 8, ease: 'linear' }}
+                    className="p-1.5 rounded-lg bg-yellow-500/20"
                   >
                     <ShieldCheck className="h-5 w-5" />
                   </motion.div>
-                  <span className="tracking-wide">
-                    {isEligible
-                      ? 'Verified Medical Patient'
-                      : 'Verification Pending'}
-                  </span>
+                  <span className="tracking-wide">Verification Pending</span>
                 </motion.div>
               )}
+
+              {/* Verification Progress Tracker */}
+              {drGreenClient && <VerificationProgress />}
             </motion.div>
           </div>
         </section>
