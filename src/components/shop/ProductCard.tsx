@@ -1,9 +1,9 @@
 import { motion } from 'framer-motion';
-import { ShoppingCart, Eye, Leaf, Droplets, Lock, Sparkles } from 'lucide-react';
+import { ShoppingCart, Eye, Leaf, Droplets, Lock, Sparkles, Database, Cloud, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useShop } from '@/context/ShopContext';
-import { Product } from '@/hooks/useProducts';
+import { Product, DataSource } from '@/hooks/useProducts';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from 'react-i18next';
@@ -11,9 +11,16 @@ import { useTranslation } from 'react-i18next';
 interface ProductCardProps {
   product: Product;
   onViewDetails: (product: Product) => void;
+  showDataSource?: boolean;
 }
 
-export function ProductCard({ product, onViewDetails }: ProductCardProps) {
+const dataSourceConfig: Record<DataSource, { icon: typeof Database; label: string; color: string }> = {
+  local: { icon: Database, label: 'Local DB', color: 'bg-emerald-500/20 text-emerald-300 border-emerald-400/30' },
+  api: { icon: Cloud, label: 'Dr Green API', color: 'bg-sky-500/20 text-sky-300 border-sky-400/30' },
+  fallback: { icon: AlertCircle, label: 'Fallback', color: 'bg-amber-500/20 text-amber-300 border-amber-400/30' },
+};
+
+export function ProductCard({ product, onViewDetails, showDataSource = false }: ProductCardProps) {
   const { addToCart, isEligible, drGreenClient } = useShop();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -83,6 +90,8 @@ export function ProductCard({ product, onViewDetails }: ProductCardProps) {
   };
 
   const categoryStyles = getCategoryStyles(product.category);
+  const sourceConfig = dataSourceConfig[product.dataSource || 'fallback'];
+  const SourceIcon = sourceConfig.icon;
 
   const getButtonContent = () => {
     if (!product.availability) {
@@ -159,6 +168,14 @@ export function ProductCard({ product, onViewDetails }: ProductCardProps) {
           >
             {product.category}
           </Badge>
+          
+          {/* Data source indicator - bottom right (debug) */}
+          {showDataSource && (
+            <div className={`absolute bottom-4 right-4 flex items-center gap-1.5 px-2 py-1 rounded-full border text-[10px] font-medium ${sourceConfig.color}`}>
+              <SourceIcon className="h-3 w-3" />
+              <span>{sourceConfig.label}</span>
+            </div>
+          )}
           
           {/* Quick view button - top right */}
           <motion.button

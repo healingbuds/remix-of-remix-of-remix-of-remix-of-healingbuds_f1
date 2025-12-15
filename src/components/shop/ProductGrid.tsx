@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Filter, Leaf, X } from 'lucide-react';
+import { Search, Filter, Leaf, X, RefreshCw, Database, Cloud, AlertCircle, Bug } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -18,22 +18,31 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet';
-import { Skeleton } from '@/components/ui/skeleton';
 import { ProductCard } from './ProductCard';
 import { ProductDetail } from './ProductDetail';
-import { Product, useProducts } from '@/hooks/useProducts';
+import { Product, useProducts, DataSource } from '@/hooks/useProducts';
 import { useShop } from '@/context/ShopContext';
+import { useToast } from '@/hooks/use-toast';
 
 const categories = ['All', 'Sativa', 'Indica', 'Hybrid', 'CBD'];
 
+const dataSourceInfo: Record<DataSource, { icon: typeof Database; label: string; color: string }> = {
+  local: { icon: Database, label: 'Local Database', color: 'text-emerald-400' },
+  api: { icon: Cloud, label: 'Dr Green API', color: 'text-sky-400' },
+  fallback: { icon: AlertCircle, label: 'Fallback Data', color: 'text-amber-400' },
+};
+
 export function ProductGrid() {
   const { countryCode } = useShop();
-  const { products, isLoading } = useProducts(countryCode);
+  const { products, isLoading, dataSource, syncFromApi, refetch } = useProducts(countryCode);
+  const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [sortBy, setSortBy] = useState('name');
   const [showAvailableOnly, setShowAvailableOnly] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [showDebug, setShowDebug] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
 
   // Filter and sort products
   const filteredProducts = products
@@ -68,8 +77,31 @@ export function ProductGrid() {
     setShowAvailableOnly(false);
   };
 
+  const handleSync = async () => {
+    setIsSyncing(true);
+    try {
+      const result = await syncFromApi();
+      if (result?.success) {
+        toast({
+          title: "Sync Complete",
+          description: `Synced ${result.synced} strains from Dr Green API`,
+        });
+      } else {
+        toast({
+          title: "Sync Failed",
+          description: result?.error || "Failed to sync strains",
+          variant: "destructive",
+        });
+      }
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
   const hasActiveFilters =
     searchQuery || selectedCategory !== 'All' || sortBy !== 'name' || showAvailableOnly;
+
+  const SourceIcon = dataSourceInfo[dataSource].icon;
 
   return (
     <div className="space-y-6">
@@ -190,10 +222,44 @@ export function ProductGrid() {
         )}
       </div>
 
-      {/* Results count */}
-      <p className="text-sm text-muted-foreground">
-        Showing {filteredProducts.length} of {products.length} products
-      </p>
+      {/* Results count and data source indicator */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <p className="text-sm text-muted-foreground">
+          Showing {filteredProducts.length} of {products.length} products
+        </p>
+        
+        {/* Data source and debug controls */}
+        <div className="flex items-center gap-3">
+          {/* Data source badge */}
+          <div className={`flex items-center gap-1.5 text-xs ${dataSourceInfo[dataSource].color}`}>
+            <SourceIcon className="h-3.5 w-3.5" />
+            <span className="font-medium">{dataSourceInfo[dataSource].label}</span>
+          </div>
+          
+          {/* Sync button */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleSync}
+            disabled={isSyncing}
+            className="h-8 text-xs"
+          >
+            <RefreshCw className={`mr-1.5 h-3 w-3 ${isSyncing ? 'animate-spin' : ''}`} />
+            {isSyncing ? 'Syncing...' : 'Sync from API'}
+          </Button>
+          
+          {/* Debug toggle */}
+          <Button
+            variant={showDebug ? 'default' : 'ghost'}
+            size="sm"
+            onClick={() => setShowDebug(!showDebug)}
+            className="h-8 text-xs"
+          >
+            <Bug className="mr-1.5 h-3 w-3" />
+            Debug
+          </Button>
+        </div>
+      </div>
 
       {/* Product grid */}
       {isLoading ? (
@@ -259,6 +325,7 @@ export function ProductGrid() {
                 key={product.id}
                 product={product}
                 onViewDetails={setSelectedProduct}
+                showDataSource={showDebug}
               />
             ))}
           </AnimatePresence>

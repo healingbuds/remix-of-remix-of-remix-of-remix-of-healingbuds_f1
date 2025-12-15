@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
+export type DataSource = 'local' | 'api' | 'fallback';
+
 export interface Product {
   id: string;
   name: string;
@@ -14,9 +16,10 @@ export interface Product {
   effects: string[];
   terpenes: string[];
   category: string;
+  dataSource: DataSource;
 }
 
-// Real Dr Green strain data with verified S3 images
+// Real Dr Green strain data with verified S3 images (fallback only)
 const S3_BASE = 'https://prod-profiles-backend.s3.amazonaws.com/';
 
 const mockProducts: Product[] = [
@@ -33,6 +36,7 @@ const mockProducts: Product[] = [
     effects: ['Energizing', 'Uplifting', 'Clear-headed', 'Focus'],
     terpenes: ['Limonene', 'Pinene', 'Terpinolene'],
     category: 'Sativa',
+    dataSource: 'fallback',
   },
   {
     id: 'drg-candy-pave',
@@ -47,6 +51,7 @@ const mockProducts: Product[] = [
     effects: ['Euphoric', 'Relaxing', 'Heavy', 'Sedating'],
     terpenes: ['Caryophyllene', 'Limonene', 'Myrcene'],
     category: 'Indica',
+    dataSource: 'fallback',
   },
   {
     id: 'drg-nfs-12',
@@ -61,6 +66,7 @@ const mockProducts: Product[] = [
     effects: ['Sedating', 'Pain Relief', 'Heavy Buzz', 'Relaxing'],
     terpenes: ['Myrcene', 'Caryophyllene', 'Linalool'],
     category: 'Indica',
+    dataSource: 'fallback',
   },
   {
     id: 'drg-blockberry',
@@ -75,6 +81,7 @@ const mockProducts: Product[] = [
     effects: ['Happy', 'Clear-headed', 'Creative', 'Social'],
     terpenes: ['Myrcene', 'Pinene', 'Caryophyllene'],
     category: 'Hybrid',
+    dataSource: 'fallback',
   },
   {
     id: 'drg-femme-fatale',
@@ -89,6 +96,7 @@ const mockProducts: Product[] = [
     effects: ['Calming', 'Smooth', 'Relaxing', 'Evening'],
     terpenes: ['Linalool', 'Myrcene', 'Caryophyllene'],
     category: 'Indica',
+    dataSource: 'fallback',
   },
   {
     id: 'drg-blue-zushi',
@@ -103,6 +111,7 @@ const mockProducts: Product[] = [
     effects: ['Euphoric', 'Creative', 'Stress Relief', 'Calming'],
     terpenes: ['Limonene', 'Caryophyllene', 'Myrcene'],
     category: 'Hybrid',
+    dataSource: 'fallback',
   },
   {
     id: 'drg-peanut-butter-breath',
@@ -117,6 +126,7 @@ const mockProducts: Product[] = [
     effects: ['Relaxing', 'Appetite', 'Sleep Aid', 'Calming'],
     terpenes: ['Caryophyllene', 'Limonene', 'Linalool'],
     category: 'Hybrid',
+    dataSource: 'fallback',
   },
 ];
 
@@ -132,17 +142,49 @@ export function useProducts(countryCode: string = 'PT') {
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [dataSource, setDataSource] = useState<DataSource>('fallback');
 
   const fetchProducts = useCallback(async () => {
     setIsLoading(true);
     setError(null);
 
-    // Convert to Alpha-3 for API
-    const alpha3Code = countryCodeMap[countryCode] || 'PRT';
-
     try {
+      // STEP 1: Try local database first (fastest)
+      console.log('Fetching strains from local database...');
+      const { data: localStrains, error: dbError } = await supabase
+        .from('strains')
+        .select('*')
+        .eq('is_archived', false)
+        .order('name');
+
+      if (!dbError && localStrains && localStrains.length > 0) {
+        console.log(`Found ${localStrains.length} strains in local database`);
+        const transformedProducts: Product[] = localStrains.map((strain) => ({
+          id: strain.id,
+          name: strain.name,
+          description: strain.description || '',
+          thcContent: strain.thc_content || 0,
+          cbdContent: strain.cbd_content || 0,
+          retailPrice: strain.retail_price || 0,
+          availability: strain.availability,
+          stock: strain.stock || 0,
+          imageUrl: strain.image_url || '/placeholder.svg',
+          effects: strain.feelings || [],
+          terpenes: strain.flavors || [],
+          category: strain.type || 'Hybrid',
+          dataSource: 'local' as DataSource,
+        }));
+        setProducts(transformedProducts);
+        setDataSource('local');
+        setIsLoading(false);
+        return;
+      }
+
+      // STEP 2: If local DB empty, try Dr Green API
+      const alpha3Code = countryCodeMap[countryCode] || 'PRT';
+      console.log(`Local DB empty, fetching from Dr Green API for country: ${alpha3Code}`);
+
       // First try country-specific strains
-      console.log(`Fetching strains for country: ${alpha3Code}`);
       let { data, error: fnError } = await supabase.functions.invoke('drgreen-proxy', {
         body: {
           action: 'get-strains',
@@ -164,6 +206,7 @@ export function useProducts(countryCode: string = 'PT') {
       if (fnError) {
         console.warn('Dr Green API unavailable, using fallback data:', fnError);
         setProducts(mockProducts);
+        setDataSource('fallback');
       } else if (data?.success && data?.data?.strains?.length > 0) {
         // Transform API response to our Product interface
         const transformedProducts: Product[] = data.data.strains.map((strain: any) => {
@@ -205,21 +248,44 @@ export function useProducts(countryCode: string = 'PT') {
             effects,
             terpenes: strain.flavour ? strain.flavour.split(',').map((s: string) => s.trim()) : (strain.terpenes || []),
             category: strain.category || strain.type || 'Hybrid',
+            dataSource: 'api' as DataSource,
           };
         });
         setProducts(transformedProducts);
+        setDataSource('api');
       } else {
         // Use fallback data if no strains returned from API
         console.log('No strains from API, using fallback data');
         setProducts(mockProducts);
+        setDataSource('fallback');
       }
     } catch (err) {
       console.error('Error fetching products:', err);
       setProducts(mockProducts);
+      setDataSource('fallback');
     } finally {
       setIsLoading(false);
     }
   }, [countryCode]);
+
+  // Trigger sync from Dr Green API to local DB
+  const syncFromApi = useCallback(async () => {
+    console.log('Triggering strain sync from Dr Green API...');
+    try {
+      const { data, error } = await supabase.functions.invoke('sync-strains');
+      if (error) {
+        console.error('Sync error:', error);
+        return { success: false, error: error.message };
+      }
+      console.log('Sync result:', data);
+      // Refetch products after sync
+      await fetchProducts();
+      return data;
+    } catch (err) {
+      console.error('Sync exception:', err);
+      return { success: false, error: 'Sync failed' };
+    }
+  }, [fetchProducts]);
 
   useEffect(() => {
     fetchProducts();
@@ -229,6 +295,8 @@ export function useProducts(countryCode: string = 'PT') {
     products,
     isLoading,
     error,
+    dataSource,
     refetch: fetchProducts,
+    syncFromApi,
   };
 }
