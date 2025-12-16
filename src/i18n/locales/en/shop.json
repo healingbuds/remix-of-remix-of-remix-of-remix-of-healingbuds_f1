@@ -1,7 +1,7 @@
 {
   "title": "Medical Cannabis Dispensary",
-  "subtitle": "Explore our curated selection of pharmaceutical-grade cannabis strains",
-  "searchPlaceholder": "Search strains...",
+  "subtitle": "Explore our curated selection of pharmaceutical-grade cannabis cultivars",
+  "searchPlaceholder": "Search cultivars...",
   "showingProducts": "Showing {{count}} of {{total}} products",
   "noProducts": "No products found",
   "noProductsDescription": "Try adjusting your search or filter criteria",
@@ -36,7 +36,7 @@
   "cart": {
     "title": "Your Cart",
     "empty": "Your cart is empty",
-    "emptyDescription": "Browse our selection of medical cannabis strains",
+    "emptyDescription": "Browse our selection of medical cannabis cultivars",
     "continueShopping": "Continue Shopping",
     "subtotal": "Subtotal",
     "checkout": "Proceed to Checkout",

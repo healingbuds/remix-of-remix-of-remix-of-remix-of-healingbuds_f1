@@ -84,12 +84,12 @@ export function ProductGrid() {
       if (result?.success) {
         toast({
           title: "Sync Complete",
-          description: `Synced ${result.synced} strains from Dr Green API`,
+          description: `Synced ${result.synced} cultivars from Dr Green API`,
         });
       } else {
         toast({
           title: "Sync Failed",
-          description: result?.error || "Failed to sync strains",
+          description: result?.error || "Failed to sync cultivars",
           variant: "destructive",
         });
       }
@@ -111,7 +111,7 @@ export function ProductGrid() {
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search strains..."
+            placeholder="Search cultivars..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-10 bg-background/50 backdrop-blur-sm"
@@ -181,7 +181,7 @@ export function ProductGrid() {
       <div className="flex flex-wrap items-center gap-3">
         <div className="flex items-center gap-2 mr-2">
           <Leaf className="h-4 w-4 text-primary" />
-          <span className="text-sm font-medium text-muted-foreground">Strain Type:</span>
+          <span className="text-sm font-medium text-muted-foreground">Cultivar Type:</span>
         </div>
         <div className="flex flex-wrap gap-2">
           {categories.map((category) => (

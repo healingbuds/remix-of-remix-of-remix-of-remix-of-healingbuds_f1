@@ -180,7 +180,7 @@ const AdminStrains = () => {
       if (data?.success) {
         toast({
           title: 'Sync Complete',
-          description: `Synced ${data.synced} strains from Dr Green API`,
+          description: `Synced ${data.synced} cultivars from Dr Green API`,
         });
         fetchStrains();
       } else {
@@ -190,7 +190,7 @@ const AdminStrains = () => {
       console.error('Sync error:', error);
       toast({
         title: 'Sync Failed',
-        description: error.message || 'Failed to sync strains from API',
+        description: error.message || 'Failed to sync cultivars from API',
         variant: 'destructive',
       });
     } finally {
@@ -236,14 +236,14 @@ const AdminStrains = () => {
           .update(strainData)
           .eq('id', editingStrain.id);
         if (error) throw error;
-        toast({ title: 'Strain Updated', description: `${editingStrain.name} has been updated.` });
+        toast({ title: 'Cultivar Updated', description: `${editingStrain.name} has been updated.` });
       } else {
         // Create new
         const { error } = await supabase
           .from('strains')
           .insert(strainData);
         if (error) throw error;
-        toast({ title: 'Strain Created', description: `${editingStrain.name} has been created.` });
+        toast({ title: 'Cultivar Created', description: `${editingStrain.name} has been created.` });
       }
 
       setIsDialogOpen(false);
@@ -253,7 +253,7 @@ const AdminStrains = () => {
       console.error('Save error:', error);
       toast({
         title: 'Save Failed',
-        description: error.message || 'Failed to save strain.',
+        description: error.message || 'Failed to save cultivar.',
         variant: 'destructive',
       });
     } finally {
@@ -269,13 +269,13 @@ const AdminStrains = () => {
         .eq('id', id);
       if (error) throw error;
       
-      toast({ title: 'Strain Deleted', description: 'The strain has been removed.' });
+      toast({ title: 'Cultivar Deleted', description: 'The cultivar has been removed.' });
       fetchStrains();
     } catch (error: any) {
       console.error('Delete error:', error);
       toast({
         title: 'Delete Failed',
-        description: error.message || 'Failed to delete strain.',
+        description: error.message || 'Failed to delete cultivar.',
         variant: 'destructive',
       });
     } finally {
@@ -292,7 +292,7 @@ const AdminStrains = () => {
       if (error) throw error;
       
       toast({
-        title: strain.is_archived ? 'Strain Restored' : 'Strain Archived',
+        title: strain.is_archived ? 'Cultivar Restored' : 'Cultivar Archived',
         description: `${strain.name} has been ${strain.is_archived ? 'restored' : 'archived'}.`,
       });
       fetchStrains();
@@ -364,10 +364,10 @@ const AdminStrains = () => {
               <div>
                 <div className="flex items-center gap-3 mb-2">
                   <Shield className="h-8 w-8 text-primary" />
-                  <h1 className="text-3xl font-bold text-foreground">Admin: Strain Management</h1>
+                  <h1 className="text-3xl font-bold text-foreground">Admin: Cultivar Management</h1>
                 </div>
                 <p className="text-muted-foreground">
-                  Manage locally cached strain data • {strains.length} strains
+                  Manage locally cached cultivar data • {strains.length} cultivars
                 </p>
               </div>
               <div className="flex items-center gap-3">
@@ -388,7 +388,7 @@ const AdminStrains = () => {
                   setIsDialogOpen(true);
                 }}>
                   <Plus className="mr-2 h-4 w-4" />
-                  Add Strain
+                  Add Cultivar
                 </Button>
               </div>
             </div>
@@ -399,7 +399,7 @@ const AdminStrains = () => {
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
-                    placeholder="Search strains by name or SKU..."
+                    placeholder="Search cultivars by name or SKU..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="pl-10"
@@ -413,10 +413,10 @@ const AdminStrains = () => {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Database className="h-5 w-5" />
-                  Strain Catalog
+                  Cultivar Catalog
                 </CardTitle>
                 <CardDescription>
-                  {filteredStrains.length} strain{filteredStrains.length !== 1 ? 's' : ''} found
+                  {filteredStrains.length} cultivar{filteredStrains.length !== 1 ? 's' : ''} found
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -440,7 +440,7 @@ const AdminStrains = () => {
                         <TableRow>
                           <TableCell colSpan={9} className="text-center py-12">
                             <Leaf className="h-12 w-12 mx-auto mb-3 text-muted-foreground/50" />
-                            <p className="text-muted-foreground">No strains found</p>
+                            <p className="text-muted-foreground">No cultivars found</p>
                           </TableCell>
                         </TableRow>
                       ) : (
@@ -534,7 +534,7 @@ const AdminStrains = () => {
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
-              {editingStrain?.id ? 'Edit Strain' : 'Add New Strain'}
+              {editingStrain?.id ? 'Edit Cultivar' : 'Add New Cultivar'}
             </DialogTitle>
           </DialogHeader>
           {editingStrain && (
@@ -545,7 +545,7 @@ const AdminStrains = () => {
                   <Input
                     value={editingStrain.name || ''}
                     onChange={(e) => setEditingStrain({ ...editingStrain, name: e.target.value })}
-                    placeholder="Strain name"
+                    placeholder="Cultivar name"
                   />
                 </div>
                 <div className="space-y-2">
@@ -563,7 +563,7 @@ const AdminStrains = () => {
                 <Textarea
                   value={editingStrain.description || ''}
                   onChange={(e) => setEditingStrain({ ...editingStrain, description: e.target.value })}
-                  placeholder="Strain description..."
+                  placeholder="Cultivar description..."
                   rows={3}
                 />
               </div>
@@ -713,9 +713,9 @@ const AdminStrains = () => {
       <AlertDialog open={!!deleteConfirm} onOpenChange={() => setDeleteConfirm(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete Strain?</AlertDialogTitle>
+            <AlertDialogTitle>Delete Cultivar?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. The strain will be permanently removed from the database.
+              This action cannot be undone. The cultivar will be permanently removed from the database.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
