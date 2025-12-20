@@ -6,6 +6,7 @@ import PageTransition from "@/components/PageTransition";
 import ScrollAnimation from "@/components/ScrollAnimation";
 import BackToTop from "@/components/BackToTop";
 import MobileBottomActions from "@/components/MobileBottomActions";
+import AnimatedStatistics from "@/components/AnimatedStatistics";
 import { Leaf, Users, FlaskConical } from "lucide-react";
 import { Link } from "react-router-dom";
 import { motion, useScroll, useTransform } from "framer-motion";
@@ -217,8 +218,11 @@ const WhatWeDo = () => {
           </div>
         </section>
 
+        {/* Animated Statistics Section */}
+        <AnimatedStatistics />
+
         {/* CTA Section - Linear style */}
-        <section className="py-20 md:py-32 bg-muted/30">
+        <section className="py-20 md:py-32 bg-muted/30 relative z-10">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h2 className="text-3xl md:text-4xl lg:text-5xl font-semibold text-foreground mb-6 tracking-tight">
               {t('cta.title')}
@@ -226,8 +230,8 @@ const WhatWeDo = () => {
             <p className="text-base md:text-lg text-muted-foreground/80 max-w-3xl mx-auto mb-10">
               {t('cta.description')}
             </p>
-            <Link to="/contact">
-              <button className="btn-primary px-7 py-3">
+            <Link to="/contact" className="inline-block relative z-20">
+              <button className="btn-primary px-7 py-3 relative z-20">
                 {t('cta.button')} →
               </button>
             </Link>

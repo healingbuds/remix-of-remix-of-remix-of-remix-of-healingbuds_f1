@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -11,6 +11,7 @@ import { Microscope, FileText, Award, Users, Search } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import SEOHead from "@/components/SEOHead";
+import { motion, useScroll, useTransform } from "framer-motion";
 import researchLabImage from "@/assets/research-lab-hq.jpg";
 import conditionAnxiety from "@/assets/condition-anxiety.jpg";
 import conditionChronicPain from "@/assets/condition-chronic-pain.jpg";
@@ -30,6 +31,15 @@ const Research = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [menuOpen, setMenuOpen] = useState(false);
+  const heroRef = useRef<HTMLDivElement>(null);
+  
+  const { scrollYProgress } = useScroll({
+    target: heroRef,
+    offset: ["start start", "end start"]
+  });
+  
+  const y = useTransform(scrollYProgress, [0, 1], ["0%", "30%"]);
+  const scale = useTransform(scrollYProgress, [0, 1], [1, 1.1]);
 
   const categoryKeys = ["all", "painManagement", "mentalHealth", "neurological", "sleepDisorders"];
 
@@ -93,40 +103,84 @@ const Research = () => {
       <div className="min-h-screen bg-background pb-24 lg:pb-0">
         <Header onMenuStateChange={setMenuOpen} />
       <main className="pt-28 md:pt-32">
-        {/* Hero Section - Linear style */}
+        {/* Hero Section - Linear style with staggered animation */}
         <section className="bg-background py-16 md:py-20">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-            <ScrollAnimation>
-              <div className="max-w-5xl">
-                <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-foreground mb-6 tracking-tight leading-[1.1]">
-                  {t('hero.title')}
-                </h1>
-                <p className="text-xl md:text-2xl text-muted-foreground/80 max-w-3xl font-light">
-                  {t('hero.subtitle')}
-                </p>
-              </div>
-            </ScrollAnimation>
+            <motion.div 
+              className="max-w-5xl"
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, ease: [0.25, 0.4, 0.25, 1] }}
+            >
+              <motion.h1 
+                className="text-5xl md:text-6xl lg:text-7xl font-bold text-foreground mb-6 tracking-tight leading-[1.1]"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.1 }}
+              >
+                {t('hero.title')}
+              </motion.h1>
+              <motion.p 
+                className="text-xl md:text-2xl text-muted-foreground/80 max-w-3xl font-light"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.2 }}
+              >
+                {t('hero.subtitle')}
+              </motion.p>
+            </motion.div>
           </div>
         </section>
 
-        {/* Hero Image */}
+        {/* Hero Image with Parallax & Edge Fade */}
         <section className="container mx-auto px-4 sm:px-6 lg:px-8 pb-16 md:pb-20">
-          <div className="relative h-[400px] md:h-[500px] overflow-hidden rounded-xl border border-border/30">
-            <img 
+          <motion.div 
+            ref={heroRef}
+            className="relative h-[400px] md:h-[500px] overflow-hidden rounded-2xl"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.8, delay: 0.3 }}
+          >
+            <motion.img 
               src={researchLabImage} 
               alt="Research laboratory with cannabis testing" 
               className="absolute inset-0 w-full h-full object-cover"
+              style={{ y, scale }}
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-background/10 to-transparent" />
+            
+            {/* Animated edge fade vignette */}
+            <motion.div 
+              className="absolute inset-0 pointer-events-none z-10"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 1.2, delay: 0.5 }}
+              style={{
+                background: `
+                  radial-gradient(ellipse 120% 80% at 50% 50%, transparent 40%, hsl(var(--background) / 0.3) 70%, hsl(var(--background) / 0.7) 100%),
+                  linear-gradient(to bottom, transparent 60%, hsl(var(--background) / 0.5) 100%)
+                `
+              }}
+            />
+            
+            {/* Subtle animated glow on edges */}
+            <motion.div 
+              className="absolute inset-0 pointer-events-none z-10 rounded-2xl"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: [0.3, 0.5, 0.3] }}
+              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+              style={{
+                boxShadow: 'inset 0 0 60px 20px hsl(var(--background) / 0.4)'
+              }}
+            />
             
             {/* Botanical line-art decorations */}
-            <div className="absolute top-4 left-4 opacity-[0.08] pointer-events-none">
+            <div className="absolute top-4 left-4 opacity-[0.08] pointer-events-none z-20">
               <BotanicalDecoration variant="cannabis-leaf-elegant" className="w-24 md:w-32 h-auto text-white" />
             </div>
-            <div className="absolute bottom-4 right-4 opacity-[0.08] pointer-events-none">
+            <div className="absolute bottom-4 right-4 opacity-[0.08] pointer-events-none z-20">
               <BotanicalDecoration variant="cannabis-bud" className="w-20 md:w-28 h-auto text-white" />
             </div>
-          </div>
+          </motion.div>
         </section>
 
         {/* Main Content - Linear style */}
@@ -292,12 +346,12 @@ const Research = () => {
             )}
 
             <ScrollAnimation>
-              <div className="mt-20 text-center">
+              <div className="mt-20 text-center relative z-20">
                 <p className="text-lg text-muted-foreground/80 mb-6">
                   {t('conditions.notListed')}
                 </p>
-                <Link to="/contact">
-                  <button className="btn-primary px-8 py-3 text-lg">
+                <Link to="/contact" className="inline-block relative z-20">
+                  <button className="btn-primary px-8 py-3 text-lg shadow-lg shadow-primary/20">
                     {t('conditions.contactUs')} →
                   </button>
                 </Link>
@@ -307,7 +361,7 @@ const Research = () => {
         </section>
 
         {/* CTA - Linear style */}
-        <section className="py-20 md:py-32 bg-background">
+        <section className="py-20 md:py-32 bg-background relative z-10">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h2 className="text-3xl md:text-4xl lg:text-5xl font-semibold text-foreground mb-6 tracking-tight">
               {t('cta.title')}
@@ -315,8 +369,8 @@ const Research = () => {
             <p className="text-base md:text-lg text-muted-foreground/80 max-w-3xl mx-auto mb-10">
               {t('cta.subtitle')}
             </p>
-            <Link to="/contact">
-              <button className="btn-primary px-7 py-3">
+            <Link to="/contact" className="inline-block relative z-20">
+              <button className="btn-primary px-7 py-3 shadow-lg shadow-primary/20">
                 {t('cta.button')} →
               </button>
             </Link>

@@ -47,7 +47,7 @@ const MedicalClinics = () => {
       <div className="min-h-screen bg-background pb-24 lg:pb-0">
         <Header onMenuStateChange={setMenuOpen} />
         <main className="pt-24">
-          {/* Hero Section with Parallax */}
+          {/* Hero Section with Parallax & Edge Fade */}
           <section ref={heroRef} className="relative h-[500px] overflow-hidden">
             <motion.img 
               src={medicalProducts}
@@ -55,16 +55,56 @@ const MedicalClinics = () => {
               className="absolute inset-0 w-full h-full object-cover"
               style={{ y, opacity }}
             />
-            <div className="absolute inset-0 bg-gradient-to-b from-background/40 via-background/60 to-background" />
-            <div className="relative container mx-auto px-4 sm:px-6 lg:px-8 h-full flex flex-col justify-center">
-              <ScrollAnimation>
-                <h1 className="text-5xl md:text-6xl font-semibold text-foreground mb-4">
+            {/* Gradient overlay */}
+            <div className="absolute inset-0 bg-gradient-to-b from-background/40 via-background/60 to-background z-[1]" />
+            
+            {/* Animated edge fade vignette */}
+            <motion.div 
+              className="absolute inset-0 pointer-events-none z-[2]"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 1.2, delay: 0.3 }}
+              style={{
+                background: `
+                  radial-gradient(ellipse 120% 80% at 50% 50%, transparent 40%, hsl(var(--background) / 0.3) 70%, hsl(var(--background) / 0.7) 100%)
+                `
+              }}
+            />
+            
+            {/* Subtle animated glow on edges */}
+            <motion.div 
+              className="absolute inset-0 pointer-events-none z-[2]"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: [0.3, 0.5, 0.3] }}
+              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+              style={{
+                boxShadow: 'inset 0 0 80px 30px hsl(var(--background) / 0.5)'
+              }}
+            />
+            
+            <div className="relative container mx-auto px-4 sm:px-6 lg:px-8 h-full flex flex-col justify-center z-[3]">
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, ease: [0.25, 0.4, 0.25, 1] }}
+              >
+                <motion.h1 
+                  className="text-5xl md:text-6xl font-semibold text-foreground mb-4"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: 0.1 }}
+                >
                   {t('hero.title')}
-                </h1>
-                <p className="text-xl text-muted-foreground/80 max-w-2xl">
+                </motion.h1>
+                <motion.p 
+                  className="text-xl text-muted-foreground/80 max-w-2xl"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: 0.2 }}
+                >
                   {t('hero.subtitle')}
-                </p>
-              </ScrollAnimation>
+                </motion.p>
+              </motion.div>
             </div>
           </section>
 
@@ -98,9 +138,9 @@ const MedicalClinics = () => {
           <section className="py-20 md:py-32" style={{ backgroundColor: 'hsl(var(--section-color))' }}>
             <div className="container mx-auto px-4 sm:px-6 lg:px-8">
               <ScrollAnimation>
-                <div className="flex justify-between items-center mb-12 max-w-6xl mx-auto">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-12 max-w-6xl mx-auto">
                   <h2 className="text-4xl font-semibold text-white">{t('services.title')}</h2>
-                  <button className="btn-linear text-white border border-white/30 hover:bg-white/10 px-6 py-2">
+                  <button className="relative z-20 bg-white/10 backdrop-blur-sm text-white border border-white/30 hover:bg-white/20 hover:border-white/50 px-6 py-2.5 rounded-xl font-medium transition-all duration-300 hover:shadow-lg active:scale-[0.97]">
                     {t('services.learnMore')} →
                   </button>
                 </div>
@@ -284,11 +324,11 @@ const MedicalClinics = () => {
                     <p className="text-muted-foreground/80 mb-8">
                       {t('cta.description')}
                     </p>
-                    <div className="flex flex-wrap gap-3">
-                      <button className="btn-primary px-6 py-2.5">
+                    <div className="flex flex-wrap gap-3 relative z-20">
+                      <button className="btn-primary px-6 py-2.5 shadow-lg shadow-primary/20">
                         {t('cta.contactButton')} →
                       </button>
-                      <button className="btn-outline px-6 py-2.5">
+                      <button className="bg-transparent border-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground px-6 py-2.5 rounded-xl font-medium transition-all duration-300 hover:shadow-lg active:scale-[0.97]">
                         {t('cta.eligibilityButton')} →
                       </button>
                     </div>
