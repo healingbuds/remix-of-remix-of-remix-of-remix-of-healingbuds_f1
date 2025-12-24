@@ -28,12 +28,12 @@ const RegionSwitcher = ({ showResetOption = true }: RegionSwitcherProps) => {
       <DropdownMenuTrigger asChild>
         <Button
           variant="outline"
-          className="px-4 py-2 h-auto text-sm font-medium border-primary/30 bg-primary/5 hover:bg-primary/10 gap-2"
+          className="px-4 py-2 h-auto text-sm font-medium border-primary/30 bg-primary/5 hover:bg-primary/10 inline-flex items-center gap-2"
         >
-          <MapPin className="w-4 h-4 text-primary" />
-          <span className="text-lg">{currentRegionOption.flag}</span>
-          <span>{currentRegionOption.label} News</span>
-          <ChevronDown className="w-4 h-4 ml-1 opacity-60" />
+          <MapPin className="w-4 h-4 text-primary flex-shrink-0" />
+          <span className="text-lg leading-none flex-shrink-0">{currentRegionOption.flag}</span>
+          <span className="whitespace-nowrap">{currentRegionOption.label} News</span>
+          <ChevronDown className="w-4 h-4 ml-1 opacity-60 flex-shrink-0" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="center" className="w-56 bg-card border-border">
