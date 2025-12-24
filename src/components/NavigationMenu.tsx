@@ -56,7 +56,7 @@ const NavigationMenu = ({ scrolled, onCloseAllDropdowns }: NavigationMenuProps) 
         to="/shop" 
         className={getNavItemStyles(isShopActive)}
       >
-        Shop
+        Dispensary
       </Link>
       
       <Link to="/support" className={getNavItemStyles(isActive("/support"))}>

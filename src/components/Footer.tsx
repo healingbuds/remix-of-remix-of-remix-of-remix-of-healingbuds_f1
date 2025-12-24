@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { Mail, MapPin } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useGeoLocation } from "@/hooks/useGeoLocation";
-import HBIcon from "@/components/HBIcon";
+import MedicalLeafIcon from "@/components/icons/MedicalLeafIcon";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -31,14 +31,14 @@ const Footer = () => {
               </p>
               <div className="space-y-3">
                 <div className="flex items-start gap-3 text-white/60 text-sm group">
-                  <MapPin size={16} className="mt-0.5 flex-shrink-0 group-hover:text-primary transition-colors" />
+                  <MapPin size={16} className="mt-0.5 flex-shrink-0 text-primary/80 group-hover:text-primary transition-colors" />
                   <span className="font-body">
                     {locationConfig.address}<br />
                     {locationConfig.city}
                   </span>
                 </div>
                 <div className="flex items-center gap-3 text-white/60 text-sm group">
-                  <Mail size={16} className="flex-shrink-0 group-hover:text-primary transition-colors" />
+                  <Mail size={16} className="flex-shrink-0 text-primary/80 group-hover:text-primary transition-colors" />
                   <a href={`mailto:${locationConfig.email}`} className="font-body hover:text-white transition-colors">
                     {locationConfig.email}
                   </a>
@@ -52,7 +52,7 @@ const Footer = () => {
               {/* Patient */}
               <div>
               <h4 className="font-jakarta font-semibold text-sm uppercase tracking-wider mb-5 text-white/90 flex items-center gap-2">
-                  <HBIcon size="sm" variant="white" className="flex-shrink-0 opacity-80" />
+                  <MedicalLeafIcon size={16} className="flex-shrink-0 text-primary" />
                   Patient
                 </h4>
                 <ul className="space-y-3">
@@ -63,7 +63,7 @@ const Footer = () => {
                   </li>
                   <li>
                     <Link to="/shop" className="font-body text-sm text-white/60 hover:text-white transition-colors inline-block hover:translate-x-1 transform duration-200">
-                      Shop Products
+                      Dispensary
                     </Link>
                   </li>
                   <li>
@@ -82,7 +82,7 @@ const Footer = () => {
               {/* Support */}
               <div>
               <h4 className="font-jakarta font-semibold text-sm uppercase tracking-wider mb-5 text-white/90 flex items-center gap-2">
-                  <HBIcon size="sm" variant="white" className="flex-shrink-0 opacity-80" />
+                  <MedicalLeafIcon size={16} className="flex-shrink-0 text-primary" />
                   Support
                 </h4>
                 <ul className="space-y-3">
@@ -107,7 +107,7 @@ const Footer = () => {
               {/* Legal */}
               <div>
               <h4 className="font-jakarta font-semibold text-sm uppercase tracking-wider mb-5 text-white/90 flex items-center gap-2">
-                  <HBIcon size="sm" variant="white" className="flex-shrink-0 opacity-80" />
+                  <MedicalLeafIcon size={16} className="flex-shrink-0 text-primary" />
                   Legal
                 </h4>
                 <ul className="space-y-3">

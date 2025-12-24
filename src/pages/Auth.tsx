@@ -255,11 +255,12 @@ const Auth = () => {
                       </svg>
                     </summary>
                     <div className="mt-3 space-y-2 bg-muted/50 rounded-lg p-4 border border-border">
-                      <div 
-                        className="p-3 bg-background rounded-md border border-border hover:border-primary/50 cursor-pointer transition-colors"
-                        onClick={() => {
+                      <button 
+                        type="button"
+                        className="w-full p-3 bg-background rounded-md border border-border hover:border-primary/50 cursor-pointer transition-colors text-left"
+                        onClick={async () => {
                           setEmail("patient@healingbuds.test");
-                          setPassword("TestPatient123!");
+                          setPassword("Patient123!");
                         }}
                       >
                         <p className="font-semibold text-sm text-foreground">Patient Account</p>
@@ -267,15 +268,16 @@ const Auth = () => {
                           <span className="font-mono bg-muted px-1.5 py-0.5 rounded">patient@healingbuds.test</span>
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          <span className="font-mono bg-muted px-1.5 py-0.5 rounded">TestPatient123!</span>
+                          <span className="font-mono bg-muted px-1.5 py-0.5 rounded">Patient123!</span>
                         </p>
-                        <p className="text-xs text-primary mt-1">✓ KYC Verified • Full Shop Access</p>
-                      </div>
-                      <div 
-                        className="p-3 bg-background rounded-md border border-border hover:border-primary/50 cursor-pointer transition-colors"
-                        onClick={() => {
+                        <p className="text-xs text-primary mt-1">✓ KYC Verified • Full Dispensary Access</p>
+                      </button>
+                      <button 
+                        type="button"
+                        className="w-full p-3 bg-background rounded-md border border-border hover:border-primary/50 cursor-pointer transition-colors text-left"
+                        onClick={async () => {
                           setEmail("pending@healingbuds.test");
-                          setPassword("TestPending123!");
+                          setPassword("Pending123!");
                         }}
                       >
                         <p className="font-semibold text-sm text-foreground">Pending Verification</p>
@@ -283,15 +285,16 @@ const Auth = () => {
                           <span className="font-mono bg-muted px-1.5 py-0.5 rounded">pending@healingbuds.test</span>
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          <span className="font-mono bg-muted px-1.5 py-0.5 rounded">TestPending123!</span>
+                          <span className="font-mono bg-muted px-1.5 py-0.5 rounded">Pending123!</span>
                         </p>
                         <p className="text-xs text-highlight mt-1">⏳ Awaiting Admin Approval</p>
-                      </div>
-                      <div 
-                        className="p-3 bg-background rounded-md border border-border hover:border-primary/50 cursor-pointer transition-colors"
-                        onClick={() => {
+                      </button>
+                      <button 
+                        type="button"
+                        className="w-full p-3 bg-background rounded-md border border-border hover:border-primary/50 cursor-pointer transition-colors text-left"
+                        onClick={async () => {
                           setEmail("admin@healingbuds.test");
-                          setPassword("TestAdmin123!");
+                          setPassword("Admin123!");
                         }}
                       >
                         <p className="font-semibold text-sm text-foreground">Admin Account</p>
@@ -299,10 +302,10 @@ const Auth = () => {
                           <span className="font-mono bg-muted px-1.5 py-0.5 rounded">admin@healingbuds.test</span>
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          <span className="font-mono bg-muted px-1.5 py-0.5 rounded">TestAdmin123!</span>
+                          <span className="font-mono bg-muted px-1.5 py-0.5 rounded">Admin123!</span>
                         </p>
                         <p className="text-xs text-secondary mt-1">🔑 Full Admin Access</p>
-                      </div>
+                      </button>
                       <p className="text-xs text-muted-foreground text-center pt-2 border-t border-border">
                         Click an account to auto-fill credentials
                       </p>
