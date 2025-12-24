@@ -6,6 +6,7 @@ import PageTransition from "@/components/PageTransition";
 import ScrollAnimation from "@/components/ScrollAnimation";
 import BackToTop from "@/components/BackToTop";
 import MobileBottomActions from "@/components/MobileBottomActions";
+import AnimatedStatistics from "@/components/AnimatedStatistics";
 import { Users, Heart, FileText } from "lucide-react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
@@ -304,6 +305,9 @@ const MedicalClinics = () => {
               </div>
             </div>
           </section>
+
+          {/* Animated Statistics Section */}
+          <AnimatedStatistics />
 
           {/* CTA Section */}
           <section className="py-20 md:py-32 bg-background">
