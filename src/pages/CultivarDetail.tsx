@@ -5,27 +5,34 @@ import { Helmet } from 'react-helmet-async';
 import { 
   ArrowLeft, Leaf, Droplets, ShoppingCart, Minus, Plus, 
   Wind, Beaker, Heart, Clock, Shield, Star, Sparkles,
-  AlertCircle, CheckCircle2, Info
+  AlertCircle, CheckCircle2, Info, Stethoscope, Pill, 
+  AlertTriangle, Users, Timer, BookOpen, Loader2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Skeleton } from '@/components/ui/skeleton';
 import Header from '@/layout/Header';
 import Footer from '@/components/Footer';
 import PageTransition from '@/components/PageTransition';
 import { useProducts, Product } from '@/hooks/useProducts';
 import { useShop } from '@/context/ShopContext';
+import { useStrainMedicalInfo } from '@/hooks/useStrainMedicalInfo';
 import { useToast } from '@/hooks/use-toast';
+import { formatPrice } from '@/lib/currency';
 
 export default function CultivarDetail() {
   const { cultivarId } = useParams<{ cultivarId: string }>();
   const navigate = useNavigate();
   const { products, isLoading } = useProducts();
-  const { addToCart, isEligible, drGreenClient } = useShop();
+  const { addToCart, isEligible, drGreenClient, countryCode } = useShop();
   const { toast } = useToast();
   const [quantity, setQuantity] = useState(1);
   const [product, setProduct] = useState<Product | null>(null);
+  
+  // Fetch AI-enhanced medical information
+  const { medicalInfo, isLoading: isMedicalLoading } = useStrainMedicalInfo(product);
 
   useEffect(() => {
     if (!isLoading && products.length > 0) {
@@ -258,7 +265,7 @@ export default function CultivarDetail() {
                 {/* Price */}
                 <div className="flex items-baseline gap-3">
                   <span className="text-4xl font-bold text-primary">
-                    €{product.retailPrice.toFixed(2)}
+                    {formatPrice(product.retailPrice, countryCode)}
                   </span>
                   <span className="text-lg text-muted-foreground">per gram</span>
                 </div>
@@ -324,7 +331,7 @@ export default function CultivarDetail() {
                   <div className="flex items-center justify-between">
                     <span className="text-muted-foreground">Total:</span>
                     <span className="text-3xl font-bold text-primary">
-                      €{(product.retailPrice * quantity).toFixed(2)}
+                      {formatPrice(product.retailPrice * quantity, countryCode)}
                     </span>
                   </div>
 
@@ -345,18 +352,227 @@ export default function CultivarDetail() {
 
         {/* Detailed Information Tabs */}
         <section className="container mx-auto px-4 py-12 lg:py-20">
-          <Tabs defaultValue="overview" className="w-full">
-            <TabsList className="w-full max-w-2xl mx-auto mb-8 bg-white/5 border border-white/10 p-1 rounded-xl h-auto flex-wrap">
+          <Tabs defaultValue="medical" className="w-full">
+            <TabsList className="w-full max-w-3xl mx-auto mb-8 bg-white/5 border border-white/10 p-1 rounded-xl h-auto flex-wrap">
+              <TabsTrigger value="medical" className="flex-1 py-3 rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                <Stethoscope className="h-4 w-4 mr-2" />
+                Medical Info
+              </TabsTrigger>
               <TabsTrigger value="overview" className="flex-1 py-3 rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                 Overview
               </TabsTrigger>
               <TabsTrigger value="effects" className="flex-1 py-3 rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                Effects & Benefits
+                Effects
               </TabsTrigger>
               <TabsTrigger value="usage" className="flex-1 py-3 rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                 Usage Guide
               </TabsTrigger>
             </TabsList>
+
+            {/* Medical Information Tab - AI Enhanced */}
+            <TabsContent value="medical" className="space-y-8">
+              {isMedicalLoading ? (
+                <div className="grid md:grid-cols-2 gap-8">
+                  <div className="p-6 rounded-2xl bg-white/5 border border-white/10 space-y-4">
+                    <Skeleton className="h-6 w-48" />
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-4 w-3/4" />
+                    <div className="flex gap-2 flex-wrap">
+                      <Skeleton className="h-8 w-24" />
+                      <Skeleton className="h-8 w-28" />
+                      <Skeleton className="h-8 w-20" />
+                    </div>
+                  </div>
+                  <div className="p-6 rounded-2xl bg-white/5 border border-white/10 space-y-4">
+                    <Skeleton className="h-6 w-48" />
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-4 w-2/3" />
+                  </div>
+                </div>
+              ) : medicalInfo ? (
+                <div className="space-y-8">
+                  {/* Conditions & Effects Row */}
+                  <div className="grid md:grid-cols-2 gap-8">
+                    {/* Medical Conditions */}
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="p-6 rounded-2xl bg-gradient-to-br from-emerald-500/10 to-emerald-500/5 border border-emerald-500/20"
+                    >
+                      <h3 className="text-xl font-bold mb-4 flex items-center gap-2 text-emerald-400">
+                        <Stethoscope className="h-5 w-5" />
+                        May Help With
+                      </h3>
+                      <div className="flex flex-wrap gap-2">
+                        {medicalInfo.medicalConditions.map((condition) => (
+                          <Badge
+                            key={condition}
+                            className="px-3 py-1.5 bg-emerald-500/20 text-emerald-300 border-emerald-400/30"
+                          >
+                            {condition}
+                          </Badge>
+                        ))}
+                      </div>
+                    </motion.div>
+
+                    {/* Therapeutic Effects */}
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.1 }}
+                      className="p-6 rounded-2xl bg-gradient-to-br from-cyan-500/10 to-cyan-500/5 border border-cyan-500/20"
+                    >
+                      <h3 className="text-xl font-bold mb-4 flex items-center gap-2 text-cyan-400">
+                        <Heart className="h-5 w-5" />
+                        Therapeutic Effects
+                      </h3>
+                      <div className="flex flex-wrap gap-2">
+                        {medicalInfo.therapeuticEffects.map((effect) => (
+                          <Badge
+                            key={effect}
+                            className="px-3 py-1.5 bg-cyan-500/20 text-cyan-300 border-cyan-400/30"
+                          >
+                            {effect}
+                          </Badge>
+                        ))}
+                      </div>
+                    </motion.div>
+                  </div>
+
+                  {/* Recommended For & Time of Use */}
+                  <div className="grid md:grid-cols-3 gap-6">
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.15 }}
+                      className="p-5 rounded-2xl bg-white/5 border border-white/10"
+                    >
+                      <div className="flex items-center gap-2 mb-3">
+                        <Users className="h-5 w-5 text-primary" />
+                        <h4 className="font-semibold">Recommended For</h4>
+                      </div>
+                      <ul className="space-y-2">
+                        {medicalInfo.recommendedFor.slice(0, 3).map((rec) => (
+                          <li key={rec} className="text-sm text-muted-foreground flex items-start gap-2">
+                            <CheckCircle2 className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                            {rec}
+                          </li>
+                        ))}
+                      </ul>
+                    </motion.div>
+
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.2 }}
+                      className="p-5 rounded-2xl bg-white/5 border border-white/10"
+                    >
+                      <div className="flex items-center gap-2 mb-3">
+                        <Timer className="h-5 w-5 text-primary" />
+                        <h4 className="font-semibold">Best Time to Use</h4>
+                      </div>
+                      <p className="text-muted-foreground text-sm">{medicalInfo.timeOfUse}</p>
+                      <p className="text-xs text-muted-foreground/70 mt-2">{medicalInfo.onsetDuration}</p>
+                    </motion.div>
+
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.25 }}
+                      className="p-5 rounded-2xl bg-white/5 border border-white/10"
+                    >
+                      <div className="flex items-center gap-2 mb-3">
+                        <Pill className="h-5 w-5 text-primary" />
+                        <h4 className="font-semibold">Dosage Guidance</h4>
+                      </div>
+                      <p className="text-muted-foreground text-sm">{medicalInfo.dosageGuidance}</p>
+                    </motion.div>
+                  </div>
+
+                  {/* Warnings & Research */}
+                  <div className="grid md:grid-cols-2 gap-8">
+                    {/* Side Effects & Warnings */}
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.3 }}
+                      className="p-6 rounded-2xl bg-amber-500/10 border border-amber-500/20"
+                    >
+                      <h3 className="text-xl font-bold mb-4 flex items-center gap-2 text-amber-400">
+                        <AlertTriangle className="h-5 w-5" />
+                        Potential Side Effects
+                      </h3>
+                      <div className="flex flex-wrap gap-2 mb-4">
+                        {medicalInfo.potentialSideEffects.map((effect) => (
+                          <Badge
+                            key={effect}
+                            variant="outline"
+                            className="px-3 py-1 bg-amber-500/10 text-amber-300 border-amber-400/30"
+                          >
+                            {effect}
+                          </Badge>
+                        ))}
+                      </div>
+                      {medicalInfo.interactionWarnings.length > 0 && (
+                        <div className="mt-4 pt-4 border-t border-amber-500/20">
+                          <p className="text-sm font-medium text-amber-300 mb-2">Drug Interactions:</p>
+                          <ul className="space-y-1">
+                            {medicalInfo.interactionWarnings.slice(0, 3).map((warning) => (
+                              <li key={warning} className="text-xs text-amber-200/70 flex items-start gap-2">
+                                <AlertCircle className="h-3 w-3 mt-0.5 shrink-0" />
+                                {warning}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </motion.div>
+
+                    {/* Research Notes */}
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.35 }}
+                      className="p-6 rounded-2xl bg-white/5 border border-white/10"
+                    >
+                      <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+                        <BookOpen className="h-5 w-5 text-primary" />
+                        Research & Evidence
+                      </h3>
+                      <p className="text-muted-foreground text-sm leading-relaxed">
+                        {medicalInfo.researchNotes}
+                      </p>
+                      <div className="mt-4 pt-4 border-t border-white/10">
+                        <p className="text-sm font-medium mb-2">Patient Experiences:</p>
+                        <p className="text-xs text-muted-foreground italic">
+                          "{medicalInfo.patientTestimonialSummary}"
+                        </p>
+                      </div>
+                    </motion.div>
+                  </div>
+
+                  {/* Medical Disclaimer */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.4 }}
+                    className="p-4 rounded-xl bg-primary/10 border border-primary/20"
+                  >
+                    <div className="flex items-start gap-3">
+                      <Info className="h-5 w-5 text-primary mt-0.5 shrink-0" />
+                      <p className="text-sm text-muted-foreground">
+                        <span className="font-semibold text-foreground">Medical Disclaimer:</span> This information is for educational purposes only and should not replace professional medical advice. Always consult with your prescribing physician before starting or modifying any cannabis therapy.
+                      </p>
+                    </div>
+                  </motion.div>
+                </div>
+              ) : (
+                <div className="text-center py-12">
+                  <AlertCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <p className="text-muted-foreground">Medical information unavailable</p>
+                </div>
+              )}
+            </TabsContent>
 
             <TabsContent value="overview" className="space-y-8">
               <div className="grid md:grid-cols-2 gap-8">

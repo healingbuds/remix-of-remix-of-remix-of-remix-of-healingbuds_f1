@@ -135,7 +135,8 @@ export function ProductCard({ product, onViewDetails, showDataSource = false }: 
       animate={{ opacity: 1, y: 0 }}
       whileHover={{ y: -8, scale: 1.02 }}
       transition={{ duration: 0.3, ease: "easeOut" }}
-      className="h-full"
+      className="h-full cursor-pointer"
+      onClick={() => navigate(`/shop/cultivar/${product.id}`)}
     >
       <div className={`group relative h-full overflow-hidden rounded-2xl bg-gradient-to-b from-card/90 to-card/60 backdrop-blur-xl border border-white/10 shadow-xl shadow-black/20 hover:shadow-2xl hover:shadow-primary/20 transition-all duration-500 ${categoryStyles.glow}`}>
         {/* Gradient overlay for premium depth */}
@@ -180,7 +181,10 @@ export function ProductCard({ product, onViewDetails, showDataSource = false }: 
             initial={{ opacity: 0, scale: 0.8 }}
             whileHover={{ scale: 1.1 }}
             className="absolute top-4 right-4 p-2.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-white/20"
-            onClick={() => onViewDetails(product)}
+            onClick={(e) => {
+              e.stopPropagation();
+              onViewDetails(product);
+            }}
           >
             <Eye className="h-4 w-4" />
           </motion.button>
@@ -245,7 +249,10 @@ export function ProductCard({ product, onViewDetails, showDataSource = false }: 
             className="w-full h-11 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl"
             disabled={!product.availability}
             variant={!drGreenClient || !isEligible ? "secondary" : "default"}
-            onClick={handleAddToCart}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleAddToCart();
+            }}
           >
             {getButtonContent()}
           </Button>
