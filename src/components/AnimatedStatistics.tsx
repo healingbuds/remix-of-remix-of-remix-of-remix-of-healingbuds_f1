@@ -18,32 +18,32 @@ const statistics: Statistic[] = [
     suffix: "m²", 
     label: "Cultivation Space", 
     icon: Leaf,
-    gradient: "from-emerald-400 via-teal-500 to-cyan-500",
-    glowColor: "rgba(52, 211, 153, 0.4)"
+    gradient: "from-[#4DBFA1] via-[#2C7D7A] to-[#1C4F4D]",
+    glowColor: "rgba(77, 191, 161, 0.4)"
   },
   { 
     value: 50, 
     suffix: "+", 
     label: "Research Partners", 
     icon: Users,
-    gradient: "from-cyan-400 via-blue-500 to-indigo-500",
-    glowColor: "rgba(34, 211, 238, 0.4)"
+    gradient: "from-[#0D9488] via-[#2C7D7A] to-[#1C4F4D]",
+    glowColor: "rgba(13, 148, 136, 0.4)"
   },
   { 
     value: 15, 
     suffix: "+", 
     label: "Countries Served", 
     icon: Globe,
-    gradient: "from-violet-400 via-purple-500 to-fuchsia-500",
-    glowColor: "rgba(167, 139, 250, 0.4)"
+    gradient: "from-[#4DBFA1] via-[#0D9488] to-[#2C7D7A]",
+    glowColor: "rgba(44, 125, 122, 0.4)"
   },
   { 
     value: 100, 
     suffix: "%", 
     label: "EU GMP Certified", 
     icon: Award,
-    gradient: "from-amber-400 via-orange-500 to-rose-500",
-    glowColor: "rgba(251, 191, 36, 0.4)"
+    gradient: "from-[#84CC16] via-[#4DBFA1] to-[#2C7D7A]",
+    glowColor: "rgba(132, 204, 22, 0.4)"
   },
 ];
 
@@ -248,9 +248,9 @@ const AnimatedStatistics = ({ className = "" }: AnimatedStatisticsProps) => {
     >
       {/* Animated background elements */}
       <div className="absolute inset-0 pointer-events-none">
-        {/* Large gradient orbs */}
+        {/* Large gradient orbs - brand-aligned */}
         <motion.div
-          className="absolute -top-40 -left-40 w-80 h-80 bg-emerald-500/20 rounded-full blur-3xl"
+          className="absolute -top-40 -left-40 w-80 h-80 bg-[#4DBFA1]/20 rounded-full blur-3xl"
           animate={{
             scale: [1, 1.2, 1],
             opacity: [0.15, 0.25, 0.15],
@@ -258,7 +258,7 @@ const AnimatedStatistics = ({ className = "" }: AnimatedStatisticsProps) => {
           transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
         />
         <motion.div
-          className="absolute -bottom-40 -right-40 w-96 h-96 bg-cyan-500/20 rounded-full blur-3xl"
+          className="absolute -bottom-40 -right-40 w-96 h-96 bg-[#2C7D7A]/20 rounded-full blur-3xl"
           animate={{
             scale: [1.2, 1, 1.2],
             opacity: [0.2, 0.1, 0.2],
@@ -266,7 +266,7 @@ const AnimatedStatistics = ({ className = "" }: AnimatedStatisticsProps) => {
           transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
         />
         <motion.div
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-violet-500/10 rounded-full blur-3xl"
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[#1C4F4D]/15 rounded-full blur-3xl"
           animate={{
             scale: [1, 1.1, 1],
             rotate: [0, 180, 360],
@@ -299,13 +299,13 @@ const AnimatedStatistics = ({ className = "" }: AnimatedStatisticsProps) => {
             transition={{ duration: 0.6, delay: 0.1 }}
             className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 mb-6"
           >
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="w-2 h-2 rounded-full bg-[#4DBFA1] animate-pulse" />
             <span className="text-sm text-white/70 font-medium tracking-wide uppercase">Global Impact</span>
           </motion.div>
           
           <h2 className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-white tracking-tight mb-4">
             Our Impact in{" "}
-            <span className="bg-gradient-to-r from-emerald-400 via-cyan-400 to-violet-400 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-[#4DBFA1] via-[#2C7D7A] to-[#0D9488] bg-clip-text text-transparent">
               Numbers
             </span>
           </h2>

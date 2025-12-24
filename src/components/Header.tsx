@@ -198,10 +198,10 @@ const Header = ({ onMenuStateChange }: HeaderProps) => {
 
   return (
     <>
-      {/* Scroll Progress Bar */}
-      <div className="fixed top-0 left-0 right-0 sm:top-2 sm:left-2 sm:right-2 h-1 bg-primary/20 z-[60] sm:rounded-t-xl">
+      {/* Scroll Progress Bar - Always sticky at absolute top */}
+      <div className="fixed top-0 left-0 right-0 h-1 bg-[#1C4F4D]/30 z-[100]">
         <motion.div
-          className="h-full bg-gradient-to-r from-primary via-secondary to-primary origin-left will-change-transform"
+          className="h-full bg-gradient-to-r from-[#4DBFA1] via-[#2C7D7A] to-[#1C4F4D] origin-left will-change-transform"
           style={{ 
             scaleX,
             transformOrigin: "0%"
