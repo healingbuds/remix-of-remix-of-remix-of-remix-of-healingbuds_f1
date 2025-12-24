@@ -18,16 +18,16 @@ All colors MUST be HSL.
     --light-gray: 171 12% 66%;          /* #A0B3B0 - Light Gray */
     --subtle-dark: 176 39% 17%;         /* #1A3C3A - Subtle Dark */
 
-    /* Application Colors */
-    --background: 0 0% 98%;             /* Light background */
-    --foreground: 176 39% 17%;          /* Dark text */
-    --off-white: 160 20% 99%;
+    /* Application Colors - Soft sage-cream undertones for gentle contrast */
+    --background: 150 12% 97%;            /* Subtle sage-cream tint */
+    --foreground: 172 32% 20%;            /* Warmer sage-charcoal text */
+    --off-white: 155 18% 98%;             /* Soft sage undertone */
 
-    --card: 0 0% 100%;
-    --card-foreground: 176 39% 17%;
+    --card: 155 10% 99%;                  /* Barely-there green warmth */
+    --card-foreground: 172 32% 20%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 176 39% 17%;
+    --popover: 155 10% 99%;
+    --popover-foreground: 172 32% 20%;
 
     /* Primary & Secondary using brand colors - sage teal matching nav */
     --primary: 175 42% 35%;               /* Sage-teal matching navbar tone */
@@ -36,8 +36,8 @@ All colors MUST be HSL.
     --secondary: 178 48% 33%;           /* Secondary Green */
     --secondary-foreground: 0 0% 98%;
 
-    --muted: 171 12% 94%;
-    --muted-foreground: 171 12% 46%;
+    --muted: 160 14% 93%;                 /* Soft sage muted surface */
+    --muted-foreground: 165 12% 42%;      /* Warmer sage muted text */
 
     /* Accent - soft sage-teal for hovers and highlights */
     --accent: 165 35% 92%;
@@ -96,15 +96,15 @@ All colors MUST be HSL.
     /* Radial Gradient */
     --gradient-sage-radial: radial-gradient(ellipse at center top, hsl(171 12% 92%) 0%, hsl(171 12% 85%) 25%, hsl(178 48% 40%) 60%, hsl(178 48% 33%) 100%);
     
-    /* Linear-inspired ultra-clean shadows */
-    --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.02);
-    --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.04), 0 1px 2px -1px rgba(0, 0, 0, 0.02);
-    --shadow-md: 0 2px 4px -1px rgba(0, 0, 0, 0.06), 0 4px 6px -1px rgba(0, 0, 0, 0.04);
-    --shadow-lg: 0 4px 6px -2px rgba(0, 0, 0, 0.05), 0 10px 15px -3px rgba(0, 0, 0, 0.06);
-    --shadow-xl: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.06);
-    --shadow-2xl: 0 20px 40px -12px rgba(0, 0, 0, 0.12);
-    --shadow-card: 0 0 0 1px rgba(0, 0, 0, 0.03), 0 2px 4px rgba(0, 0, 0, 0.05), 0 12px 24px rgba(0, 0, 0, 0.05);
-    --shadow-elegant: 0 0 0 1px rgba(0, 0, 0, 0.02), 0 8px 24px -4px rgba(0, 0, 0, 0.08);
+    /* Sage-tinted shadows for softer, cohesive feel */
+    --shadow-xs: 0 1px 2px 0 hsla(165, 25%, 45%, 0.04);
+    --shadow-sm: 0 1px 3px 0 hsla(165, 25%, 40%, 0.06), 0 1px 2px -1px hsla(165, 25%, 40%, 0.03);
+    --shadow-md: 0 2px 4px -1px hsla(165, 30%, 35%, 0.08), 0 4px 6px -1px hsla(165, 30%, 35%, 0.05);
+    --shadow-lg: 0 4px 6px -2px hsla(165, 30%, 30%, 0.07), 0 10px 15px -3px hsla(165, 30%, 30%, 0.08);
+    --shadow-xl: 0 10px 25px -5px hsla(165, 28%, 28%, 0.10), 0 8px 10px -6px hsla(165, 28%, 28%, 0.08);
+    --shadow-2xl: 0 20px 40px -12px hsla(165, 25%, 25%, 0.14);
+    --shadow-card: 0 0 0 1px hsla(165, 20%, 45%, 0.05), 0 2px 4px hsla(165, 20%, 40%, 0.06), 0 12px 24px hsla(165, 20%, 35%, 0.07);
+    --shadow-elegant: 0 0 0 1px hsla(165, 20%, 45%, 0.04), 0 8px 24px -4px hsla(165, 25%, 30%, 0.10);
     
     /* Linear-inspired ultra-smooth transitions */
     --transition-base: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
