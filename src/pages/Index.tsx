@@ -4,7 +4,8 @@ import { motion } from "framer-motion";
 import { 
   ArrowRight, 
   Shield,
-  Stethoscope
+  Stethoscope,
+  Play
 } from "lucide-react";
 import Header from "@/layout/Header";
 import Footer from "@/components/Footer";
@@ -13,12 +14,13 @@ import BackToTop from "@/components/BackToTop";
 import MobileBottomActions from "@/components/MobileBottomActions";
 import SEOHead from "@/components/SEOHead";
 import HBIcon from "@/components/HBIcon";
-import TrustBadges from "@/components/TrustBadges";
+import TrustMotifs, { LeafCertifiedMotif, LabTestedMotif, SecureShieldMotif, DeliveryMotif } from "@/components/TrustMotifs";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useShop } from "@/context/ShopContext";
 import { useProducts } from "@/hooks/useProducts";
 import { ProductCard } from "@/components/shop/ProductCard";
+import heroVideo from "/hero-video.mp4";
 
 const eligibilitySteps = [
   { step: 1, title: "Complete Assessment", description: "Fill out our secure medical questionnaire" },
@@ -46,38 +48,65 @@ const Index = () => {
         <Header onMenuStateChange={setMenuOpen} />
         
         <main>
-          {/* Hero Section - Store First */}
-          <section className="relative min-h-[80vh] flex items-center justify-center overflow-hidden pt-20">
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-background to-secondary/10" />
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/10 via-transparent to-transparent" />
+          {/* Video Hero Section */}
+          <section className="relative min-h-[85vh] flex items-center justify-center overflow-hidden">
+            {/* Video Background */}
+            <div className="absolute inset-0 z-0">
+              <video
+                autoPlay
+                muted
+                loop
+                playsInline
+                className="absolute inset-0 w-full h-full object-cover"
+              >
+                <source src={heroVideo} type="video/mp4" />
+              </video>
+              {/* Gradient overlay */}
+              <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/70" />
+              <div className="absolute inset-0 bg-gradient-to-r from-primary/30 via-transparent to-secondary/20" />
+            </div>
             
-            <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10 py-16 lg:py-24">
+            {/* Floating motif decorations */}
+            <div className="absolute top-32 left-8 opacity-20 hidden lg:block">
+              <LeafCertifiedMotif size={80} className="text-white" />
+            </div>
+            <div className="absolute top-48 right-12 opacity-15 hidden lg:block">
+              <LabTestedMotif size={64} className="text-highlight" />
+            </div>
+            <div className="absolute bottom-32 left-16 opacity-20 hidden lg:block">
+              <SecureShieldMotif size={56} className="text-white" />
+            </div>
+            <div className="absolute bottom-48 right-8 opacity-15 hidden lg:block">
+              <DeliveryMotif size={72} className="text-highlight" />
+            </div>
+            
+            <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10 py-20 lg:py-32 pt-32">
               <div className="max-w-4xl mx-auto text-center">
                 <motion.div
                   initial={{ opacity: 0, y: 30 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.6 }}
                 >
-                  <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium mb-8">
+                  <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm text-white text-sm font-medium mb-8 border border-white/20">
                     <HBIcon size="sm" />
-                    Medical Cannabis Dispensary
+                    Seed to Sale Traceability
                   </span>
                   
-                  <h1 className="font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-foreground mb-6 leading-tight">
+                  <h1 className="font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight drop-shadow-lg">
                     Pharmaceutical-Grade
-                    <span className="block text-primary">Medical Cannabis</span>
+                    <span className="block text-highlight">Medical Cannabis</span>
                   </h1>
                   
-                  <p className="font-body text-lg md:text-xl text-muted-foreground mb-10 max-w-2xl mx-auto">
-                    Access quality-controlled, lab-tested medical cannabis products. 
-                    Complete our secure medical assessment to check your eligibility.
+                  <p className="font-body text-lg md:text-xl text-white/90 mb-10 max-w-2xl mx-auto drop-shadow">
+                    From cultivation to delivery, every product is tracked and verified. 
+                    Access quality-controlled, lab-tested medical cannabis with complete transparency.
                   </p>
 
                   {/* Primary CTAs */}
                   <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
                     <Button 
                       size="lg" 
-                      className="text-lg px-8 py-6"
+                      className="text-lg px-8 py-6 bg-highlight hover:bg-highlight/90 text-highlight-foreground shadow-lg"
                       onClick={() => navigate('/eligibility')}
                     >
                       Check Eligibility
@@ -88,7 +117,7 @@ const Index = () => {
                       <Button 
                         size="lg" 
                         variant="outline"
-                        className="text-lg px-8 py-6"
+                        className="text-lg px-8 py-6 bg-white/10 backdrop-blur-sm border-white/30 text-white hover:bg-white/20"
                         onClick={() => navigate('/shop')}
                       >
                         Browse Products
@@ -97,21 +126,32 @@ const Index = () => {
                       <Button 
                         size="lg" 
                         variant="outline"
-                        className="text-lg px-8 py-6"
+                        className="text-lg px-8 py-6 bg-white/10 backdrop-blur-sm border-white/30 text-white hover:bg-white/20"
                         onClick={() => navigate(drGreenClient ? '/eligibility' : '/auth')}
                       >
-                        {drGreenClient ? 'Start Assessment' : 'Sign In'}
+                        {drGreenClient ? 'Continue Assessment' : 'Sign In'}
                       </Button>
                     )}
                   </div>
 
-                  {/* Trust Indicators */}
+                  {/* Trust Motifs */}
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.4 }}
+                    className="flex flex-wrap justify-center gap-6 md:gap-10"
                   >
-                    <TrustBadges size="sm" />
+                    {[
+                      { Icon: LeafCertifiedMotif, label: "EU GMP Certified" },
+                      { Icon: LabTestedMotif, label: "Lab Tested" },
+                      { Icon: SecureShieldMotif, label: "Secure & Compliant" },
+                      { Icon: DeliveryMotif, label: "Discreet Delivery" },
+                    ].map(({ Icon, label }) => (
+                      <div key={label} className="flex items-center gap-2 text-white/80">
+                        <Icon size={28} className="text-highlight" />
+                        <span className="text-sm font-medium">{label}</span>
+                      </div>
+                    ))}
                   </motion.div>
                 </motion.div>
               </div>

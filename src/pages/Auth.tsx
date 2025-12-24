@@ -217,7 +217,7 @@ const Auth = () => {
       <div className="min-h-screen bg-gradient-to-br from-[#1a2e2a] via-[#2a3d3a] to-[#1a2e2a]">
         <Header />
         
-        <main className="pt-32 pb-20">
+        <main className="min-h-[calc(100vh-200px)] flex items-center justify-center py-20 pt-36">
           <div className="container mx-auto px-4 max-w-md">
             <div className="bg-background/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-border/50 overflow-hidden">
               {/* Header - refined emerald-teal gradient */}
