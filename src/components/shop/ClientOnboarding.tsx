@@ -443,14 +443,26 @@ export function ClientOnboarding() {
         medicalHistory: formData.medicalHistory || {},
       });
 
+      // Debug logging for testing
+      console.log('[Registration] Form data collected:', {
+        personal: formData.personal,
+        address: formData.address,
+        business: formData.business,
+        medicalHistory: formData.medicalHistory,
+      });
+      console.log('[Registration] Legacy payload built:', JSON.stringify(legacyPayload, null, 2));
+      console.log('[Registration] Has clientBusiness:', !!legacyPayload.clientBusiness);
+
       // Try to call edge function to create client (non-blocking)
       try {
+        console.log('[Registration] Calling drgreen-proxy with action: create-client-legacy');
         const { data: result, error } = await supabase.functions.invoke('drgreen-proxy', {
           body: {
             action: 'create-client-legacy',
             payload: legacyPayload,
           },
         });
+        console.log('[Registration] API response:', { result, error });
 
         // Handle 422 Unprocessable Entity (e.g., blurry ID)
         if (error) {
