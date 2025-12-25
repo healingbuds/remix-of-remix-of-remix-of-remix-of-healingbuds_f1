@@ -123,16 +123,18 @@ const Header = ({ onMenuStateChange }: HeaderProps) => {
       <header 
         ref={headerRef}
         className={cn(
-          "fixed top-0 left-0 right-0 sm:top-2 sm:left-2 sm:right-2 z-50",
-          "backdrop-blur-xl rounded-none sm:rounded-xl transition-all duration-500 ease-out",
+          "fixed top-0 left-0 right-0 sm:top-3 sm:left-3 sm:right-3 z-50",
+          "backdrop-blur-2xl rounded-none sm:rounded-2xl transition-all duration-700 ease-out",
           "border-b sm:border",
           scrolled 
-            ? "shadow-2xl border-white/20 sm:scale-[0.99]" 
-            : "shadow-sm border-white/10"
+            ? "shadow-2xl shadow-black/20 border-white/25 sm:scale-[0.985]" 
+            : "shadow-lg shadow-black/10 border-white/15"
         )}
         style={{ 
-          backgroundColor: `hsl(var(--nav-bg${scrolled ? '-elevated' : ''}))`,
-          transition: 'background-color 0.5s ease-out, transform 0.5s ease-out'
+          backgroundColor: scrolled 
+            ? 'hsla(178, 35%, 18%, 0.95)' 
+            : 'hsla(178, 35%, 22%, 0.85)',
+          transition: 'background-color 0.7s ease-out, transform 0.7s ease-out, box-shadow 0.7s ease-out'
         }}
       >
         <div className="container mx-auto px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12">
@@ -144,8 +146,8 @@ const Header = ({ onMenuStateChange }: HeaderProps) => {
           */}
           <div className={cn(
             "grid grid-cols-[auto_1fr_auto] items-center gap-4",
-            "transition-all duration-500 ease-out",
-            scrolled ? "h-20 md:h-[88px]" : "h-24 md:h-28"
+            "transition-all duration-700 ease-out",
+            scrolled ? "h-16 md:h-[72px]" : "h-20 md:h-24"
           )}>
             
             {/* ZONE 1: Left - Logo (fixed width, never shrinks) */}
@@ -154,13 +156,13 @@ const Header = ({ onMenuStateChange }: HeaderProps) => {
               className="flex items-center flex-shrink-0 group justify-self-start focus-visible:outline-none rounded-lg relative"
             >
               {/* Branded ring effect on hover/focus */}
-              <span className="absolute -inset-3 rounded-full opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 transition-all duration-300 ring-2 ring-primary/60 ring-offset-2 ring-offset-transparent scale-95 group-hover:scale-100" />
+              <span className="absolute -inset-2 rounded-xl opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 transition-all duration-500 ring-2 ring-primary/50 ring-offset-2 ring-offset-transparent scale-90 group-hover:scale-100" />
               <img 
                 src={hbLogoWhite} 
                 alt="Healing Buds Logo" 
                 className={cn(
-                  "w-auto min-w-[140px] sm:min-w-[160px] md:min-w-[180px] object-contain transition-all duration-500 ease-out group-hover:scale-105 relative z-10",
-                  scrolled ? "h-12 sm:h-14 md:h-16" : "h-14 sm:h-16 md:h-20"
+                  "w-auto min-w-[120px] sm:min-w-[140px] md:min-w-[160px] object-contain transition-all duration-700 ease-out group-hover:scale-105 relative z-10",
+                  scrolled ? "h-10 sm:h-11 md:h-12" : "h-12 sm:h-14 md:h-16"
                 )}
               />
             </Link>
@@ -247,7 +249,8 @@ const Header = ({ onMenuStateChange }: HeaderProps) => {
                   "min-h-[44px] min-w-[44px] flex items-center justify-center",
                   "hover:bg-white/10 active:bg-white/20",
                   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60",
-                  scrolled && "p-2"
+                scrolled && "p-2",
+                "hover:rotate-180 transition-transform duration-500"
                 )}
                 onClick={() => setMobileMenuOpen(prev => !prev)}
                 aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}

@@ -43,7 +43,7 @@ const Index = () => {
         
         <main>
           {/* Video Hero Section */}
-          <section className="relative min-h-[85vh] flex items-center justify-center overflow-hidden mt-28 sm:mt-32 md:mt-36">
+          <section className="relative min-h-[85vh] flex items-center justify-center overflow-hidden mt-24 sm:mt-28 md:mt-32">
             {/* Video Background */}
             <div className="absolute inset-0 z-0">
               <video
