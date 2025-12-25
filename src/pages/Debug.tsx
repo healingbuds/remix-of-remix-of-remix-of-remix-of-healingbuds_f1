@@ -5,7 +5,7 @@ import SEOHead from '@/components/SEOHead';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { AlertTriangle, CheckCircle2, XCircle, RefreshCw, Shield, FileText, Building2, Wifi, Database, User, Download, Leaf } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, XCircle, RefreshCw, Shield, FileText, Building2, Wifi, Database, User, Download, Leaf, ShoppingCart } from 'lucide-react';
 import { buildLegacyClientPayload } from '@/lib/drgreenApi';
 import { supabase } from '@/integrations/supabase/client';
 interface TestResult {
@@ -80,6 +80,11 @@ export default function Debug() {
     {
       name: 'Dr. Green API Live Test',
       description: 'Call actual strains endpoint to verify HMAC signature works with production API',
+      status: 'pending',
+    },
+    {
+      name: 'Cart Operations Test',
+      description: 'Verify add-to-cart and remove-from-cart API signatures via drgreen-proxy',
       status: 'pending',
     },
   ]);
@@ -579,6 +584,123 @@ export default function Debug() {
       });
     }
     
+    // ===========================================
+    // TEST 8: Cart Operations Test
+    // ===========================================
+    updateTest(7, { status: 'running' });
+    
+    try {
+      const startTime = Date.now();
+      const cartTests: { operation: string; result: 'pass' | 'fail'; details: string }[] = [];
+      
+      // Test 1: Add to cart signature
+      const { data: addData, error: addError } = await supabase.functions.invoke('drgreen-proxy', {
+        body: {
+          action: 'add-to-cart',
+          strainId: 'test-strain-id-123',
+          quantity: 1,
+          clientId: 'test-client-id',
+        },
+      });
+      
+      if (addError) {
+        // Network error
+        cartTests.push({ 
+          operation: 'add-to-cart', 
+          result: 'fail', 
+          details: `Network error: ${addError.message}` 
+        });
+      } else if (addData?.error?.includes('Invalid signature') || addData?.message?.includes('Invalid signature')) {
+        // Signature was rejected - this means signing logic is broken
+        cartTests.push({ 
+          operation: 'add-to-cart', 
+          result: 'fail', 
+          details: 'HMAC signature rejected by API' 
+        });
+      } else if (addData?.error || addData?.success === false) {
+        // API error but signature was accepted (expected for test data)
+        const errorMsg = addData?.error || addData?.message || 'API validation error';
+        cartTests.push({ 
+          operation: 'add-to-cart', 
+          result: 'pass', 
+          details: `Signature accepted, validation: ${errorMsg.slice(0, 50)}` 
+        });
+      } else {
+        // Success
+        cartTests.push({ 
+          operation: 'add-to-cart', 
+          result: 'pass', 
+          details: 'Signature accepted, cart updated' 
+        });
+      }
+      
+      // Test 2: Remove from cart signature
+      const { data: removeData, error: removeError } = await supabase.functions.invoke('drgreen-proxy', {
+        body: {
+          action: 'remove-from-cart',
+          strainId: 'test-strain-id-123',
+          clientId: 'test-client-id',
+        },
+      });
+      
+      if (removeError) {
+        cartTests.push({ 
+          operation: 'remove-from-cart', 
+          result: 'fail', 
+          details: `Network error: ${removeError.message}` 
+        });
+      } else if (removeData?.error?.includes('Invalid signature') || removeData?.message?.includes('Invalid signature')) {
+        cartTests.push({ 
+          operation: 'remove-from-cart', 
+          result: 'fail', 
+          details: 'HMAC signature rejected by API' 
+        });
+      } else if (removeData?.error || removeData?.success === false) {
+        const errorMsg = removeData?.error || removeData?.message || 'API validation error';
+        cartTests.push({ 
+          operation: 'remove-from-cart', 
+          result: 'pass', 
+          details: `Signature accepted, validation: ${errorMsg.slice(0, 50)}` 
+        });
+      } else {
+        cartTests.push({ 
+          operation: 'remove-from-cart', 
+          result: 'pass', 
+          details: 'Signature accepted, item removed' 
+        });
+      }
+      
+      const responseTime = Date.now() - startTime;
+      const allPassed = cartTests.every(t => t.result === 'pass');
+      const summary = cartTests.map(t => `${t.operation}: ${t.result === 'pass' ? '✓' : '✗'}`).join(', ');
+      
+      if (allPassed) {
+        updateTest(7, {
+          status: 'pass',
+          details: `Cart API signatures verified in ${responseTime}ms`,
+          expected: 'Both add/remove operations have valid HMAC signatures',
+          actual: summary,
+        });
+      } else {
+        anyFailed = true;
+        const failedOps = cartTests.filter(t => t.result === 'fail');
+        updateTest(7, {
+          status: 'fail',
+          details: `Cart signature failures: ${failedOps.map(t => t.details).join('; ')}`,
+          expected: 'Both add/remove operations have valid HMAC signatures',
+          actual: summary,
+        });
+      }
+    } catch (error) {
+      anyFailed = true;
+      updateTest(7, {
+        status: 'fail',
+        details: `Cart test error: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        expected: 'Cart operations testable',
+        actual: 'Test failed to execute',
+      });
+    }
+    
     setHasFailures(anyFailed);
     setIsRunning(false);
   }, []);
@@ -617,6 +739,8 @@ export default function Debug() {
         return <User className="h-5 w-5" />;
       case 6:
         return <Leaf className="h-5 w-5" />;
+      case 7:
+        return <ShoppingCart className="h-5 w-5" />;
       default:
         return null;
     }
@@ -819,6 +943,7 @@ export default function Debug() {
                 <p><strong>Test 5:</strong> Queries Supabase tables (<code className="bg-muted px-1 rounded">strains</code>, <code className="bg-muted px-1 rounded">profiles</code>, <code className="bg-muted px-1 rounded">user_roles</code>, <code className="bg-muted px-1 rounded">drgreen_clients</code>) and returns row counts</p>
                 <p><strong>Test 6:</strong> Checks <code className="bg-muted px-1 rounded">supabase.auth.getSession()</code> and displays user ID, email, provider, and assigned roles if authenticated</p>
                 <p><strong>Test 7:</strong> Calls the live Dr. Green API <code className="bg-muted px-1 rounded">/strains</code> endpoint for Portugal to verify HMAC query signing works end-to-end</p>
+                <p><strong>Test 8:</strong> Tests <code className="bg-muted px-1 rounded">add-to-cart</code> and <code className="bg-muted px-1 rounded">remove-from-cart</code> API actions to verify HMAC body signing for cart mutations</p>
               </CardContent>
             </Card>
           </div>
