@@ -72,9 +72,10 @@ const CursorFollower = ({ children }: CursorFollowerProps) => {
         }}
       >
         <motion.div
-          className="relative -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary shadow-lg"
+          className="relative -translate-x-1/2 -translate-y-1/2 rounded-full"
           style={{ 
-            boxShadow: '0 0 10px hsl(175 42% 35% / 0.4)' 
+            backgroundColor: 'hsla(185, 55%, 18%, 0.25)',
+            boxShadow: '0 0 12px hsla(185, 55%, 18%, 0.3)' 
           }}
           animate={{
             width: isHovering ? 48 : 10,
@@ -94,7 +95,10 @@ const CursorFollower = ({ children }: CursorFollowerProps) => {
         }}
       >
         <motion.div
-          className="relative -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-primary/50"
+          className="relative -translate-x-1/2 -translate-y-1/2 rounded-full border-2"
+          style={{
+            borderColor: 'hsla(185, 55%, 18%, 0.4)'
+          }}
           animate={{
             width: isHovering ? 64 : 32,
             height: isHovering ? 64 : 32,
