@@ -9,51 +9,66 @@ const corsHeaders = {
 // Use production API
 const DRGREEN_API_URL = "https://api.drgreennft.com/api/v1";
 
-// Sign payload using the private key
-async function signPayload(payload: string, privateKey: string): Promise<string> {
-  try {
-    // Import the private key for signing
-    const privateKeyBuffer = Uint8Array.from(atob(privateKey), c => c.charCodeAt(0));
-    const key = await crypto.subtle.importKey(
-      "pkcs8",
-      privateKeyBuffer,
-      { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" },
-      false,
-      ["sign"]
-    );
-    
-    const encoder = new TextEncoder();
-    const data = encoder.encode(payload);
-    const signature = await crypto.subtle.sign("RSASSA-PKCS1-v1_5", key, data);
-    return base64Encode(signature);
-  } catch (error: unknown) {
-    // Fallback to SHA-256 hash if RSA signing fails
-    console.log("RSA signing failed, using fallback:", error);
-    const encoder = new TextEncoder();
-    const data = encoder.encode(payload + privateKey);
-    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-    return base64Encode(hashBuffer);
-  }
-}
-
 // API timeout in milliseconds (20 seconds)
 const API_TIMEOUT_MS = 20000;
 
-// Make authenticated request to Dr Green Dapp API with timeout
-async function drGreenRequest(
+/**
+ * Sign payload using HMAC-SHA256 (matching WordPress legacy)
+ * Uses native Web Crypto API
+ * This is used for POST requests and singular GET requests (Method A)
+ */
+async function signPayload(payload: string, secretKey: string): Promise<string> {
+  const encoder = new TextEncoder();
+  
+  // Import the secret key for HMAC
+  const keyData = encoder.encode(secretKey);
+  const cryptoKey = await crypto.subtle.importKey(
+    "raw",
+    keyData,
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"]
+  );
+  
+  // Sign the payload
+  const payloadData = encoder.encode(payload);
+  const signatureBuffer = await crypto.subtle.sign("HMAC", cryptoKey, payloadData);
+  
+  // Convert ArrayBuffer to base64 string
+  const signatureBytes = new Uint8Array(signatureBuffer);
+  let binary = '';
+  for (let i = 0; i < signatureBytes.byteLength; i++) {
+    binary += String.fromCharCode(signatureBytes[i]);
+  }
+  return btoa(binary);
+}
+
+/**
+ * Sign query string using HMAC-SHA256 (matching WordPress legacy)
+ * This is used for GET list endpoints (Method B)
+ */
+async function signQueryString(queryString: string, secretKey: string): Promise<string> {
+  return signPayload(queryString, secretKey);
+}
+
+/**
+ * Make authenticated request to Dr Green API with body signing (Method A)
+ * Used for: POST, DELETE, and singular GET endpoints
+ */
+async function drGreenRequestBody(
   endpoint: string,
   method: string,
   body?: object
 ): Promise<Response> {
   const apiKey = Deno.env.get("DRGREEN_API_KEY");
-  const privateKey = Deno.env.get("DRGREEN_PRIVATE_KEY");
+  const secretKey = Deno.env.get("DRGREEN_PRIVATE_KEY");
   
-  if (!apiKey || !privateKey) {
+  if (!apiKey || !secretKey) {
     throw new Error("Dr Green API credentials not configured");
   }
   
   const payload = body ? JSON.stringify(body) : "";
-  const signature = await signPayload(payload, privateKey);
+  const signature = await signPayload(payload, secretKey);
   
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
@@ -62,9 +77,9 @@ async function drGreenRequest(
   };
   
   const url = `${DRGREEN_API_URL}${endpoint}`;
-  console.log(`Dr Green API request: ${method} ${url}`);
+  console.log(`[DrGreen API - Body Sign] ${method} ${url}`);
+  console.log(`[DrGreen API] Payload for signing: ${payload}`);
   
-  // Create abort controller for timeout
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT_MS);
   
@@ -72,7 +87,7 @@ async function drGreenRequest(
     const response = await fetch(url, {
       method,
       headers,
-      body: payload || undefined,
+      body: method !== "GET" && method !== "HEAD" ? payload : undefined,
       signal: controller.signal,
     });
     
@@ -85,6 +100,74 @@ async function drGreenRequest(
     }
     throw error;
   }
+}
+
+/**
+ * Make authenticated request to Dr Green API with query string signing (Method B)
+ * Used for: GET list endpoints (strains list, carts list, etc.)
+ */
+async function drGreenRequestQuery(
+  endpoint: string,
+  queryParams: Record<string, string | number>
+): Promise<Response> {
+  const apiKey = Deno.env.get("DRGREEN_API_KEY");
+  const secretKey = Deno.env.get("DRGREEN_PRIVATE_KEY");
+  
+  if (!apiKey || !secretKey) {
+    throw new Error("Dr Green API credentials not configured");
+  }
+  
+  // Build query string exactly like WordPress: http_build_query
+  const params = new URLSearchParams();
+  for (const [key, value] of Object.entries(queryParams)) {
+    params.append(key, String(value));
+  }
+  const queryString = params.toString();
+  
+  // Sign the query string (not the body)
+  const signature = await signQueryString(queryString, secretKey);
+  
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    "x-auth-apikey": apiKey,
+    "x-auth-signature": signature,
+  };
+  
+  const url = `${DRGREEN_API_URL}${endpoint}?${queryString}`;
+  console.log(`[DrGreen API - Query Sign] GET ${url}`);
+  console.log(`[DrGreen API] Query for signing: ${queryString}`);
+  
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT_MS);
+  
+  try {
+    const response = await fetch(url, {
+      method: "GET",
+      headers,
+      signal: controller.signal,
+    });
+    
+    clearTimeout(timeoutId);
+    return response;
+  } catch (error: unknown) {
+    clearTimeout(timeoutId);
+    if (error instanceof Error && error.name === 'AbortError') {
+      throw new Error('API request timed out. Please try again.');
+    }
+    throw error;
+  }
+}
+
+/**
+ * Legacy request handler for backwards compatibility
+ * Uses body signing for all requests
+ */
+async function drGreenRequest(
+  endpoint: string,
+  method: string,
+  body?: object
+): Promise<Response> {
+  return drGreenRequestBody(endpoint, method, body);
 }
 
 serve(async (req) => {
@@ -112,22 +195,123 @@ serve(async (req) => {
     // Route handling
     const action = body?.action || apiPath;
     
-    console.log(`Processing action: ${action}`, { method: req.method, body });
+    console.log(`[DrGreen Proxy] Processing action: ${action}`, { method: req.method });
     
     let response: Response;
     
     switch (action) {
       // ==========================================
+      // LEGACY WORDPRESS-COMPATIBLE ENDPOINTS
+      // ==========================================
+      
+      // Create client with legacy payload format (Method A - Body Sign)
+      case "create-client-legacy": {
+        const payload = body?.payload;
+        if (!payload) throw new Error("Payload is required for client creation");
+        
+        console.log("[DrGreen Proxy] Creating client with legacy payload:", JSON.stringify(payload, null, 2));
+        response = await drGreenRequestBody("/clients/", "POST", payload);
+        break;
+      }
+      
+      // Get strains list with query signing (Method B - Query Sign)
+      case "get-strains-legacy": {
+        const { countryCode, orderBy, take, page } = body || {};
+        const queryParams: Record<string, string | number> = {
+          orderBy: orderBy || 'desc',
+          take: take || 10,
+          page: page || 1,
+        };
+        if (countryCode) queryParams.countryCode = countryCode;
+        
+        response = await drGreenRequestQuery("/strains", queryParams);
+        break;
+      }
+      
+      // Get cart with query signing (Method B - Query Sign)
+      case "get-cart-legacy": {
+        const { clientId, orderBy, take, page } = body || {};
+        if (!clientId) throw new Error("clientId is required");
+        
+        const queryParams: Record<string, string | number> = {
+          orderBy: orderBy || 'desc',
+          take: take || 10,
+          page: page || 1,
+          clientId: clientId,
+        };
+        
+        response = await drGreenRequestQuery("/carts", queryParams);
+        break;
+      }
+      
+      // Add to cart (Method A - Body Sign)
+      case "add-to-cart": {
+        const cartData = body?.data;
+        if (!cartData) throw new Error("Cart data is required");
+        
+        response = await drGreenRequestBody("/carts", "POST", cartData);
+        break;
+      }
+      
+      // Remove from cart (Method A - Body Sign for signature, query for strainId)
+      case "remove-from-cart": {
+        const { cartId, strainId } = body || {};
+        if (!cartId || !strainId) throw new Error("cartId and strainId are required");
+        
+        // WordPress signs {"cartId": basketId} but passes strainId as query param
+        const signPayloadData = { cartId };
+        const signature = await signPayload(JSON.stringify(signPayloadData), Deno.env.get("DRGREEN_PRIVATE_KEY")!);
+        
+        const apiKey = Deno.env.get("DRGREEN_API_KEY")!;
+        const apiUrl = `${DRGREEN_API_URL}/carts/${cartId}?strainId=${strainId}`;
+        
+        console.log(`[DrGreen API - Remove Cart] DELETE ${apiUrl}`);
+        
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT_MS);
+        
+        response = await fetch(apiUrl, {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            "x-auth-apikey": apiKey,
+            "x-auth-signature": signature,
+          },
+          body: JSON.stringify(signPayloadData),
+          signal: controller.signal,
+        });
+        
+        clearTimeout(timeoutId);
+        break;
+      }
+      
+      // Empty cart (Method A - Body Sign)
+      case "empty-cart": {
+        const { cartId } = body || {};
+        if (!cartId) throw new Error("cartId is required");
+        
+        response = await drGreenRequestBody(`/carts/${cartId}`, "DELETE", { cartId });
+        break;
+      }
+      
+      // Place order (Method A - Body Sign)
+      case "place-order": {
+        const orderData = body?.data;
+        if (!orderData) throw new Error("Order data is required");
+        
+        response = await drGreenRequestBody("/orders", "POST", orderData);
+        break;
+      }
+      
+      // ==========================================
       // DAPP ADMIN ENDPOINTS
       // ==========================================
       
-      // Dashboard Summary
       case "dashboard-summary": {
         response = await drGreenRequest("/dapp/dashboard/summary", "GET");
         break;
       }
       
-      // Dashboard Analytics
       case "dashboard-analytics": {
         const { startDate, endDate, filterBy, orderBy } = body || {};
         let queryParams = `?orderBy=${orderBy || 'asc'}`;
@@ -138,13 +322,11 @@ serve(async (req) => {
         break;
       }
       
-      // Sales Summary
       case "sales-summary": {
         response = await drGreenRequest("/dapp/sales/summary", "GET");
         break;
       }
       
-      // Get All Dapp Clients (paginated)
       case "dapp-clients": {
         const { page, take, orderBy, search, searchBy, status, kyc, adminApproval } = body || {};
         let queryParams = `?orderBy=${orderBy || 'desc'}&take=${take || 10}&page=${page || 1}`;
@@ -157,7 +339,6 @@ serve(async (req) => {
         break;
       }
       
-      // Get Client Details
       case "dapp-client-details": {
         const { clientId } = body || {};
         if (!clientId) throw new Error("clientId is required");
@@ -165,7 +346,6 @@ serve(async (req) => {
         break;
       }
       
-      // Verify/Reject Client
       case "dapp-verify-client": {
         const { clientId, action: verifyAction } = body || {};
         if (!clientId || !verifyAction) throw new Error("clientId and action are required");
@@ -173,7 +353,6 @@ serve(async (req) => {
         break;
       }
       
-      // Get All Dapp Orders
       case "dapp-orders": {
         const { page, take, orderBy, search, searchBy, adminApproval, clientIds } = body || {};
         let queryParams = `?orderBy=${orderBy || 'desc'}&take=${take || 10}&page=${page || 1}`;
@@ -185,7 +364,6 @@ serve(async (req) => {
         break;
       }
       
-      // Get Order Details
       case "dapp-order-details": {
         const { orderId } = body || {};
         if (!orderId) throw new Error("orderId is required");
@@ -193,7 +371,6 @@ serve(async (req) => {
         break;
       }
       
-      // Update Order Status
       case "dapp-update-order": {
         const { orderId, orderStatus, paymentStatus } = body || {};
         if (!orderId) throw new Error("orderId is required");
@@ -201,7 +378,6 @@ serve(async (req) => {
         break;
       }
       
-      // Get All Carts
       case "dapp-carts": {
         const { page, take, orderBy, search, searchBy } = body || {};
         let queryParams = `?orderBy=${orderBy || 'desc'}&take=${take || 10}&page=${page || 1}`;
@@ -211,13 +387,11 @@ serve(async (req) => {
         break;
       }
       
-      // Get NFTs
       case "dapp-nfts": {
         response = await drGreenRequest("/dapp/users/nfts", "GET");
         break;
       }
       
-      // Dapp Strains by Country
       case "dapp-strains": {
         const { countryCode, orderBy, search, searchBy } = body || {};
         let queryParams = `?orderBy=${orderBy || 'desc'}`;
@@ -228,7 +402,6 @@ serve(async (req) => {
         break;
       }
       
-      // Verified Clients List (for products dropdown)
       case "dapp-clients-list": {
         const { orderBy, status, kyc } = body || {};
         let queryParams = `?orderBy=${orderBy || 'desc'}`;
@@ -239,10 +412,9 @@ serve(async (req) => {
       }
       
       // ==========================================
-      // EXISTING CLIENT/SHOP ENDPOINTS
+      // EXISTING CLIENT/SHOP ENDPOINTS (BACKWARDS COMPAT)
       // ==========================================
       
-      // Client operations - Create client with structured payload
       case "create-client": {
         const { personal, address, medicalRecord } = body.data || {};
         
@@ -292,7 +464,6 @@ serve(async (req) => {
         break;
       }
       
-      // Request KYC link for existing client
       case "request-kyc-link": {
         const { clientId, personal, address } = body.data || {};
         
@@ -326,7 +497,9 @@ serve(async (req) => {
       }
       
       case "get-client": {
-        response = await drGreenRequest(`/dapp/clients/${body.clientId}`, "GET");
+        // Method A - Body Sign: signs {"clientId": "..."}
+        const signBody = { clientId: body.clientId };
+        response = await drGreenRequestBody(`/clients/${body.clientId}`, "GET", signBody);
         break;
       }
       
@@ -335,7 +508,6 @@ serve(async (req) => {
         break;
       }
       
-      // Strain/Product operations
       case "get-strains": {
         const countryCode = body?.countryCode || "PRT";
         console.log(`Fetching strains for country: ${countryCode}`);
@@ -350,11 +522,12 @@ serve(async (req) => {
       }
       
       case "get-strain": {
-        response = await drGreenRequest(`/dapp/strains/${body.strainId}`, "GET");
+        // Method A - Body Sign: signs {"strainId": "..."}
+        const signBody = { strainId: body.strainId };
+        response = await drGreenRequestBody(`/strains/${body.strainId}`, "GET", signBody);
         break;
       }
       
-      // Cart operations
       case "create-cart": {
         response = await drGreenRequest("/dapp/carts", "POST", body.data);
         break;
@@ -370,14 +543,15 @@ serve(async (req) => {
         break;
       }
       
-      // Order operations
       case "create-order": {
         response = await drGreenRequest("/dapp/orders", "POST", body.data);
         break;
       }
       
       case "get-order": {
-        response = await drGreenRequest(`/dapp/orders/${body.orderId}`, "GET");
+        // Method A - Body Sign: signs {"orderId": "..."}
+        const signBody = { orderId: body.orderId };
+        response = await drGreenRequestBody(`/orders/${body.orderId}`, "GET", signBody);
         break;
       }
       
@@ -387,11 +561,12 @@ serve(async (req) => {
       }
       
       case "get-orders": {
-        response = await drGreenRequest(`/dapp/orders?clientId=${body.clientId}`, "GET");
+        // Method A - Body Sign: signs {"clientId": "..."}
+        const signBody = { clientId: body.clientId };
+        response = await drGreenRequestBody(`/client/${body.clientId}/orders`, "GET", signBody);
         break;
       }
       
-      // Payment operations
       case "create-payment": {
         response = await drGreenRequest("/dapp/payments", "POST", body.data);
         break;
@@ -410,7 +585,7 @@ serve(async (req) => {
     }
     
     const data = await response.json();
-    console.log(`Dr Green API response:`, { status: response.status, data });
+    console.log(`[DrGreen API] Response status: ${response.status}`);
     
     return new Response(JSON.stringify(data), {
       status: response.status,
@@ -419,7 +594,7 @@ serve(async (req) => {
     
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Unknown error';
-    console.error("Dr Green proxy error:", error);
+    console.error("[DrGreen Proxy] Error:", error);
     
     // Determine appropriate status code
     let statusCode = 500;
@@ -435,7 +610,8 @@ serve(async (req) => {
       JSON.stringify({ 
         error: message,
         errorCode: statusCode === 422 ? 'DOCUMENT_QUALITY' : statusCode === 504 ? 'TIMEOUT' : 'SERVER_ERROR',
-        retryable: statusCode !== 400
+        retryable: statusCode !== 400,
+        success: false
       }),
       { status: statusCode, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
