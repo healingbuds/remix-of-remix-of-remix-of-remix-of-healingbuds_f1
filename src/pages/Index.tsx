@@ -94,7 +94,7 @@ const Index = () => {
                   transition={{ duration: 0.6 }}
                 >
                   <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm text-white text-sm font-medium mb-8 border border-white/20">
-                    <HBIcon size="sm" />
+                    <img src={hbLogoTeal} alt="" className="h-5 w-5 object-contain" />
                     Seed to Sale Traceability
                   </span>
                   
