@@ -71,18 +71,34 @@ serve(async (req) => {
     }
 
     // Generate new branded product image using Lovable AI
-    const prompt = `Create a photorealistic, 4K ultra-high-definition product photograph of a premium medical cannabis glass jar. The jar should be:
+    // Prompt designed to match the exact HB branded jar style
+    const prompt = `Create a photorealistic, 4K ultra-high-definition product photograph of a premium medical cannabis glass jar with these EXACT specifications:
 
-1. A crystal-clear glass apothecary jar with a distinctive green/teal colored lid featuring the "HB" (Healing Buds) logo embossed or printed on top
-2. Inside the jar, display beautiful, dense, frosty cannabis buds of the "${productName}" strain with visible trichomes and rich coloring
-3. The jar should have elegant pharmaceutical-style labeling with the strain name "${productName}" clearly visible
-4. At the bottom of the jar or on a small tag, include "powered by Dr. Green" text
-5. Studio lighting with soft shadows, white/light gray background
-6. The image should look like a premium medical cannabis product advertisement
-7. Crystal clear, sharp focus, professional product photography style
-8. 4K quality, magazine-worthy presentation
+JAR STYLE:
+- Clear glass squat jar (short and wide, NOT tall) with rounded edges
+- White ribbed plastic screw-top lid
+- On the lid: dark green circular badge with white "HB" medical leaf logo centered
 
-Style: Clean, medical, professional, trustworthy, premium healthcare product photography`;
+LABELING:
+- Green diagonal stripe label wrapping around the jar (from upper left to lower right)
+- Clean white label area with strain name "${productName}" in elegant typography
+- Small "powered by Dr. Green" text at the bottom of the jar label
+- Batch/lot number area visible
+
+CONTENTS:
+- Dense, frosty, high-quality cannabis buds of the "${productName}" strain visible through the clear glass
+- Buds should show visible trichomes, rich green coloring with hints of purple/orange depending on strain
+- Jar should be approximately 60-70% full with buds
+
+PHOTOGRAPHY STYLE:
+- Clean white/light gray gradient background
+- Soft studio lighting with gentle shadows
+- Front-facing view showing main label clearly
+- 4K crystal-clear product photography
+- Professional medical/pharmaceutical aesthetic
+- Magazine-worthy presentation quality
+
+This is for a premium medical cannabis brand - the image must look clean, professional, and trustworthy.`;
 
     console.log("Calling Lovable AI for image generation...");
 
