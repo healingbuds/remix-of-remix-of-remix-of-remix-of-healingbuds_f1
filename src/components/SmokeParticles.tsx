@@ -60,7 +60,7 @@ export const SmokeParticles = ({
           duration: Math.random() * 1.2 + 1.0,
           delay: Math.random() * 0.3,
           rotation: (Math.random() - 0.5) * 360,
-          blur: Math.random() * 6 + 4,
+          blur: Math.random() * 2 + 1,
         };
       });
       setParticles(newParticles);
@@ -133,7 +133,7 @@ export const SmokeParticles = ({
               width: wisp.size,
               height: wisp.size,
               background: `radial-gradient(ellipse at 40% 40%, ${color}40 0%, ${color}20 40%, transparent 70%)`,
-              filter: "blur(6px)",
+              filter: "blur(2px)",
             }}
             initial={{ 
               x: 0, 
