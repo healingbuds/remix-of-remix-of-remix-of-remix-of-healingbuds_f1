@@ -9,6 +9,7 @@ import strainJar4 from '@/assets/strain-jar-4.png';
 import strainJar5 from '@/assets/strain-jar-5.png';
 import strainJar6 from '@/assets/strain-jar-6.png';
 import strainJar7 from '@/assets/strain-jar-7.png';
+import strainJarFallback from '@/assets/strain-jar-fallback.png';
 
 export type DataSource = 'api' | 'none';
 
@@ -28,39 +29,52 @@ export interface Product {
   dataSource: DataSource;
 }
 
-// S3 base URL for strain images
-const S3_BASE = 'https://prod-profiles-backend.s3.amazonaws.com/';
-
-// Strain name to branded jar image mapping
+// Strain name to branded jar image mapping (case-insensitive keys normalized below)
 const STRAIN_IMAGE_MAP: Record<string, string> = {
-  'BlockBerry': strainJar1,
-  'Blockberry': strainJar1,
-  'Blue Zushi': strainJar2,
-  'Candy Pave': strainJar3,
-  'Caribbean Breeze': strainJar4,
-  'Femme Fatale': strainJar5,
-  'NFS 12': strainJar6,
-  'Peanut Butter Breath': strainJar7,
+  'blockberry': strainJar1,
+  'block berry': strainJar1,
+  'blue zushi': strainJar2,
+  'bluezushi': strainJar2,
+  'candy pave': strainJar3,
+  'candypave': strainJar3,
+  'caribbean breeze': strainJar4,
+  'caribbeanbreeze': strainJar4,
+  'femme fatale': strainJar5,
+  'femmefatale': strainJar5,
+  'nfs 12': strainJar6,
+  'nfs12': strainJar6,
+  'peanut butter breath': strainJar7,
+  'peanutbutterbreath': strainJar7,
 };
 
-// All branded jar images for fallback
-const BRANDED_JAR_IMAGES = [strainJar1, strainJar2, strainJar3, strainJar4, strainJar5, strainJar6, strainJar7];
+// Fallback jar image for unknown strains
+const FALLBACK_JAR = strainJarFallback;
 
-// Get branded jar image for a strain - first by name, then by index fallback
-const getBrandedImage = (name: string, index: number): string => {
-  // Try exact match first
-  if (STRAIN_IMAGE_MAP[name]) {
-    return STRAIN_IMAGE_MAP[name];
+// Get branded jar image for a strain - first by name match, then fallback
+const getBrandedImage = (name: string): string => {
+  // Normalize the name for lookup
+  const normalizedName = name.toLowerCase().trim();
+  
+  // Try exact match
+  if (STRAIN_IMAGE_MAP[normalizedName]) {
+    return STRAIN_IMAGE_MAP[normalizedName];
   }
-  // Try case-insensitive match
-  const lowerName = name.toLowerCase();
+  
+  // Try removing spaces
+  const noSpaces = normalizedName.replace(/\s+/g, '');
+  if (STRAIN_IMAGE_MAP[noSpaces]) {
+    return STRAIN_IMAGE_MAP[noSpaces];
+  }
+  
+  // Try partial match
   for (const [key, value] of Object.entries(STRAIN_IMAGE_MAP)) {
-    if (key.toLowerCase() === lowerName) {
+    if (normalizedName.includes(key) || key.includes(normalizedName)) {
       return value;
     }
   }
-  // Fallback to index-based cycling
-  return BRANDED_JAR_IMAGES[index % BRANDED_JAR_IMAGES.length];
+  
+  // Return fallback jar for unknown strains
+  return FALLBACK_JAR;
 };
 
 // Map Alpha-2 to Alpha-3 country codes for Dr Green API
@@ -116,7 +130,7 @@ export function useProducts(countryCode: string = 'PT') {
         // Transform API response to our Product interface
         const transformedProducts: Product[] = data.data.strains.map((strain: any, index: number) => {
           // Use branded jar image based on strain name, fallback to index
-          const imageUrl = getBrandedImage(strain.name, index);
+          const imageUrl = getBrandedImage(strain.name);
 
           let effects: string[] = [];
           if (Array.isArray(strain.effects)) {
@@ -211,7 +225,7 @@ export function useProducts(countryCode: string = 'PT') {
         
         const transformedProducts: Product[] = localStrains.map((strain, index) => {
           // Use branded jar image based on strain name, fallback to index
-          const imageUrl = getBrandedImage(strain.name, index);
+          const imageUrl = getBrandedImage(strain.name);
 
           return {
             id: strain.id,
