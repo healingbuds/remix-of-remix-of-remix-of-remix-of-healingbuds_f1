@@ -74,7 +74,7 @@ export const SmokeParticles = ({
           id: i,
           xPath: [0, baseX + turbulence1, baseX - turbulence2, baseX + turbulence3, baseX + (Math.random() - 0.5) * 45],
           yPath: [0, riseHeight * 0.25, riseHeight * 0.5, riseHeight * 0.75, riseHeight],
-          size: Math.random() * 50 + 32,
+          size: Math.random() * 32 + 21,
           duration: Math.random() * 2.5 + 2,
           delay: Math.random() * 0.35,
           rotation: (Math.random() - 0.5) * 60,
@@ -133,7 +133,7 @@ export const SmokeParticles = ({
       id: wispIdRef.current,
       xPath: [0, baseX + sway1, baseX - sway2, baseX + sway1 * 0.5],
       yPath: [0, riseHeight * 0.35, riseHeight * 0.7, riseHeight],
-      size: Math.random() * 38 + 24,
+      size: Math.random() * 25 + 16,
       duration: Math.random() * 2.6 + 2.4,
       delay: 0,
       rotation: (Math.random() - 0.5) * 40,
@@ -142,47 +142,56 @@ export const SmokeParticles = ({
     };
   };
 
-  // Swirl SVG shape
-  const SwirlShape = ({ size, intensity }: { size: number; intensity: number }) => (
+  // Wispy swirl SVG shape matching reference images
+  const SwirlShape = ({ size, intensity, id }: { size: number; intensity: number; id: number }) => (
     <svg 
       width={size} 
-      height={size} 
-      viewBox="0 0 100 100" 
+      height={size * 2.5} 
+      viewBox="0 0 60 150" 
       style={{ overflow: 'visible' }}
     >
       <defs>
-        <radialGradient id="smokeGradient" cx="40%" cy="40%" r="60%">
-          <stop offset="0%" stopColor="rgba(255,255,255,0.75)" />
-          <stop offset="25%" stopColor="rgba(230,235,232,0.55)" />
-          <stop offset="50%" stopColor="rgba(200,210,205,0.35)" />
-          <stop offset="75%" stopColor="rgba(170,180,175,0.15)" />
+        <radialGradient id={`smokeGradient-${id}`} cx="50%" cy="30%" r="70%">
+          <stop offset="0%" stopColor="rgba(255,255,255,0.7)" />
+          <stop offset="20%" stopColor="rgba(235,240,238,0.55)" />
+          <stop offset="45%" stopColor="rgba(210,218,214,0.4)" />
+          <stop offset="70%" stopColor="rgba(185,195,190,0.2)" />
           <stop offset="100%" stopColor="transparent" />
         </radialGradient>
-        <filter id="smokeBlur" x="-50%" y="-50%" width="200%" height="200%">
-          <feGaussianBlur in="SourceGraphic" stdDeviation="3" />
+        <filter id={`smokeBlur-${id}`} x="-80%" y="-80%" width="260%" height="260%">
+          <feGaussianBlur in="SourceGraphic" stdDeviation="2.5" />
         </filter>
       </defs>
-      {/* Main swirl body */}
+      {/* Main rising wisp body - organic swirl shape */}
       <path
-        d={`M 50 50 
-            Q ${45 - intensity * 20} ${30 - intensity * 10}, ${35 - intensity * 15} ${45}
-            Q ${25 - intensity * 10} ${55 + intensity * 5}, ${40} ${65 + intensity * 10}
-            Q ${55 + intensity * 15} ${75 + intensity * 5}, ${65 + intensity * 10} ${55}
-            Q ${75 + intensity * 5} ${40 - intensity * 5}, ${55} ${35 - intensity * 10}
-            Q ${45} ${30}, 50 50`}
-        fill="url(#smokeGradient)"
-        filter="url(#smokeBlur)"
+        d={`M 30 140 
+            Q ${25 - intensity * 8} 120, ${28 + intensity * 5} 100
+            Q ${35 + intensity * 12} 85, ${25 - intensity * 6} 70
+            Q ${18 - intensity * 10} 55, ${32 + intensity * 8} 40
+            Q ${42 + intensity * 15} 25, ${28 - intensity * 5} 15
+            Q ${22 - intensity * 8} 8, ${35 + intensity * 10} 0
+            Q ${42 + intensity * 6} -5, ${38} 5
+            Q ${30 - intensity * 5} 18, ${38 + intensity * 8} 35
+            Q ${48 + intensity * 10} 48, ${35 - intensity * 5} 62
+            Q ${28 - intensity * 8} 78, ${38 + intensity * 6} 95
+            Q ${45 + intensity * 5} 115, ${35} 130
+            Q ${32} 138, 30 140`}
+        fill={`url(#smokeGradient-${id})`}
+        filter={`url(#smokeBlur-${id})`}
       />
-      {/* Secondary swirl tendril */}
-      <ellipse
-        cx={55 + intensity * 10}
-        cy={40 - intensity * 5}
-        rx={15 + intensity * 8}
-        ry={10 + intensity * 5}
-        fill="url(#smokeGradient)"
-        filter="url(#smokeBlur)"
-        opacity="0.6"
-        transform={`rotate(${-25 + intensity * 20} 55 40)`}
+      {/* Secondary tendril */}
+      <path
+        d={`M 35 130
+            Q ${42 + intensity * 6} 115, ${48 + intensity * 8} 100
+            Q ${52 + intensity * 10} 82, ${45 - intensity * 3} 68
+            Q ${40 - intensity * 5} 55, ${48 + intensity * 6} 42
+            Q ${50 + intensity * 4} 50, ${44} 62
+            Q ${38 - intensity * 4} 78, ${45 + intensity * 5} 95
+            Q ${48} 112, 40 125
+            Z`}
+        fill={`url(#smokeGradient-${id})`}
+        filter={`url(#smokeBlur-${id})`}
+        opacity="0.5"
       />
     </svg>
   );
@@ -261,7 +270,7 @@ export const SmokeParticles = ({
               times: [0, 0.3, 0.65, 1],
             }}
           >
-            <SwirlShape size={wisp.size} intensity={wisp.swirlIntensity} />
+            <SwirlShape size={wisp.size} intensity={wisp.swirlIntensity} id={wisp.id} />
           </motion.div>
         ))}
       </AnimatePresence>
@@ -299,7 +308,7 @@ export const SmokeParticles = ({
               times: [0, 0.2, 0.45, 0.7, 1],
             }}
           >
-            <SwirlShape size={particle.size} intensity={particle.swirlIntensity} />
+            <SwirlShape size={particle.size} intensity={particle.swirlIntensity} id={particle.id} />
           </motion.div>
         ))}
       </AnimatePresence>
