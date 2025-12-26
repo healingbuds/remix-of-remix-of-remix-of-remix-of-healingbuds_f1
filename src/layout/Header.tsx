@@ -109,12 +109,12 @@ const Header = ({ onMenuStateChange }: HeaderProps) => {
 
   return (
     <>
-      {/* Header Background Strip - fills gap behind floating navbar */}
+      {/* Header Background Strip - solid teal to eliminate white gap */}
       <div 
         className="fixed top-0 left-0 right-0 z-40 transition-all duration-700"
         style={{ 
           height: scrolled ? '76px' : '100px',
-          background: 'linear-gradient(180deg, hsla(178, 35%, 18%, 1) 0%, hsla(178, 35%, 18%, 0.95) 70%, hsla(178, 35%, 18%, 0) 100%)'
+          backgroundColor: 'hsl(178, 35%, 18%)'
         }}
       />
       
