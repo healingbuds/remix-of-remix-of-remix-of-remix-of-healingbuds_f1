@@ -1,10 +1,85 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { encode as base64Encode } from "https://deno.land/std@0.168.0/encoding/base64.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+// Admin-only actions that require admin role
+const ADMIN_ACTIONS = [
+  'dashboard-summary', 'dashboard-analytics', 'sales-summary',
+  'dapp-clients', 'dapp-client-details', 'dapp-verify-client',
+  'dapp-orders', 'dapp-order-details', 'dapp-update-order',
+  'dapp-carts', 'dapp-nfts', 'dapp-strains', 'dapp-clients-list',
+  'update-order', 'update-client'
+];
+
+// Actions that require ownership verification (user must own the resource)
+const OWNERSHIP_ACTIONS = [
+  'get-client', 'get-cart-legacy', 'get-cart',
+  'add-to-cart', 'remove-from-cart', 'empty-cart',
+  'place-order', 'get-order', 'get-orders'
+];
+
+// Public actions that don't require authentication
+const PUBLIC_ACTIONS = [
+  'get-strains', 'get-all-strains', 'get-strains-legacy', 'get-strain'
+];
+
+/**
+ * Verify user authentication and return user data
+ */
+async function verifyAuthentication(req: Request): Promise<{ user: any; supabaseClient: any } | null> {
+  const authHeader = req.headers.get('authorization');
+  if (!authHeader) {
+    return null;
+  }
+
+  const supabaseClient = createClient(
+    Deno.env.get('SUPABASE_URL')!,
+    Deno.env.get('SUPABASE_ANON_KEY')!,
+    { global: { headers: { Authorization: authHeader } } }
+  );
+
+  const { data: { user }, error } = await supabaseClient.auth.getUser();
+  if (error || !user) {
+    return null;
+  }
+
+  return { user, supabaseClient };
+}
+
+/**
+ * Check if user has admin role
+ */
+async function isAdmin(supabaseClient: any, userId: string): Promise<boolean> {
+  const { data } = await supabaseClient
+    .rpc('has_role', { _user_id: userId, _role: 'admin' });
+  return !!data;
+}
+
+/**
+ * Verify user owns the client resource
+ */
+async function verifyClientOwnership(
+  supabaseClient: any, 
+  userId: string, 
+  clientId: string
+): Promise<boolean> {
+  const { data, error } = await supabaseClient
+    .from('drgreen_clients')
+    .select('user_id')
+    .eq('drgreen_client_id', clientId)
+    .maybeSingle();
+
+  if (error || !data) {
+    return false;
+  }
+
+  return data.user_id === userId;
+}
 
 // Use production API
 const DRGREEN_API_URL = "https://api.drgreennft.com/api/v1";
@@ -196,6 +271,74 @@ serve(async (req) => {
     const action = body?.action || apiPath;
     
     console.log(`[DrGreen Proxy] Processing action: ${action}`, { method: req.method });
+
+    // ==========================================
+    // AUTHENTICATION & AUTHORIZATION CHECK
+    // ==========================================
+    
+    // Check if action is public (no auth required)
+    const isPublicAction = PUBLIC_ACTIONS.includes(action);
+    
+    if (!isPublicAction) {
+      // Verify user authentication
+      const authResult = await verifyAuthentication(req);
+      
+      if (!authResult) {
+        console.warn(`[Security] Unauthenticated request to ${action}`);
+        return new Response(
+          JSON.stringify({ error: 'Authentication required' }),
+          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      const { user, supabaseClient } = authResult;
+
+      // Check admin role for admin-only endpoints
+      if (ADMIN_ACTIONS.includes(action)) {
+        const hasAdminRole = await isAdmin(supabaseClient, user.id);
+        
+        if (!hasAdminRole) {
+          console.warn(`[Security] Non-admin user ${user.id} attempted to access ${action}`);
+          return new Response(
+            JSON.stringify({ error: 'Admin access required' }),
+            { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+        console.log(`[Audit] Admin ${user.id} (${user.email}) accessed ${action}`);
+      }
+
+      // Verify resource ownership for client-specific operations
+      if (OWNERSHIP_ACTIONS.includes(action)) {
+        const clientId = body?.clientId || body?.data?.clientId;
+        
+        if (clientId) {
+          // Check ownership or admin status
+          const ownsResource = await verifyClientOwnership(supabaseClient, user.id, clientId);
+          
+          if (!ownsResource) {
+            const hasAdminRole = await isAdmin(supabaseClient, user.id);
+            
+            if (!hasAdminRole) {
+              console.warn(`[Security] User ${user.id} attempted to access client ${clientId}`);
+              return new Response(
+                JSON.stringify({ error: 'Access denied' }),
+                { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+              );
+            }
+          }
+        }
+      }
+
+      // Special case: create-client-legacy and create-client don't require ownership 
+      // (new client creation) but do require authentication
+      if (action === 'create-client-legacy' || action === 'create-client') {
+        console.log(`[Audit] User ${user.id} (${user.email}) creating new client`);
+      }
+    }
+
+    // ==========================================
+    // ROUTE PROCESSING
+    // ==========================================
     
     let response: Response;
     
