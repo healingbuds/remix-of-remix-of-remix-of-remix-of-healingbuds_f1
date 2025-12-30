@@ -19,7 +19,7 @@ const TermsOfService = () => {
   };
 
   return (
-    <PageTransition>
+    <PageTransition variant="premium">
       <div className="min-h-screen bg-background pb-24 lg:pb-0">
         <Header onMenuStateChange={setMenuOpen} />
         <main className="pt-24 pb-16">

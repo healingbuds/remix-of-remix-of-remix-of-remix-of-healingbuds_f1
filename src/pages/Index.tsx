@@ -55,7 +55,7 @@ const Index = () => {
   };
 
   return (
-    <PageTransition>
+    <PageTransition variant="premium">
       <SEOHead 
         title="Healing Buds | Medical Cannabis Dispensary"
         description="Access pharmaceutical-grade medical cannabis products. Complete our secure medical assessment to check your eligibility for treatment."

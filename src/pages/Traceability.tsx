@@ -103,7 +103,7 @@ const Traceability = () => {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <PageTransition>
+    <PageTransition variant="premium">
       <SEOHead 
         title="Seed-to-Sale Traceability | Healing Buds"
         description="Learn how Healing Buds uses blockchain technology for complete seed-to-sale traceability. QR verification, pharmaceutical packaging, and full supply chain transparency."

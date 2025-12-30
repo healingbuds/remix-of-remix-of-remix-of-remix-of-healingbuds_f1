@@ -61,7 +61,7 @@ const AboutUs = () => {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <PageTransition>
+    <PageTransition variant="premium">
       <SEOHead 
         title="About Us | Healing Buds Medical Cannabis"
         description="Learn about Healing Buds' mission to provide pharmaceutical-grade medical cannabis. EU GMP certified facilities, blockchain traceability, and patient-centered care."

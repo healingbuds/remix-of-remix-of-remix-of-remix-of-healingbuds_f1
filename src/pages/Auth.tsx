@@ -213,7 +213,7 @@ const Auth = () => {
   };
 
   return (
-    <PageTransition>
+    <PageTransition variant="premium">
       <div className="min-h-screen bg-gradient-to-br from-[#1a2e2a] via-[#2a3d3a] to-[#1a2e2a]">
         <Header />
         

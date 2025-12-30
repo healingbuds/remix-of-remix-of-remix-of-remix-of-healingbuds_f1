@@ -94,7 +94,7 @@ const Conditions = () => {
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
 
   return (
-    <PageTransition>
+    <PageTransition variant="premium">
       <SEOHead 
         title="Qualifying Medical Conditions | Healing Buds"
         description="Explore the medical conditions that may qualify for medical cannabis treatment including chronic pain, PTSD, epilepsy, MS, and more. Learn about our assessment process."

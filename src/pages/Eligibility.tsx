@@ -88,7 +88,7 @@ const Eligibility = () => {
   };
 
   return (
-    <PageTransition>
+    <PageTransition variant="premium">
       <SEOHead 
         title="Medical Cannabis Eligibility | Healing Buds"
         description="Check your eligibility for medical cannabis treatment. Complete our secure medical assessment to access pharmaceutical-grade cannabis products."

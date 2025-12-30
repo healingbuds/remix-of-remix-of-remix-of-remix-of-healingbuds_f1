@@ -121,7 +121,7 @@ export default function CultivarDetail() {
 
   if (isLoading) {
     return (
-      <PageTransition>
+      <PageTransition variant="premium">
         <Header />
         <div className="min-h-screen flex items-center justify-center">
           <div className="animate-pulse text-muted-foreground">Loading cultivar details...</div>
@@ -133,7 +133,7 @@ export default function CultivarDetail() {
 
   if (!product) {
     return (
-      <PageTransition>
+      <PageTransition variant="premium">
         <Header />
         <div className="min-h-screen flex flex-col items-center justify-center gap-4">
           <AlertCircle className="h-16 w-16 text-muted-foreground" />
@@ -178,7 +178,7 @@ export default function CultivarDetail() {
   const currentCategoryInfo = categoryInfo[product.category.toLowerCase()] || categoryInfo.hybrid;
 
   return (
-    <PageTransition>
+    <PageTransition variant="premium">
       <Helmet>
         <title>{product.name} | Medical Cannabis Cultivar | HealingBuds</title>
         <meta name="description" content={product.description || `${product.name} - A premium ${product.category} cultivar with ${product.thcContent}% THC and ${product.cbdContent}% CBD. Available at HealingBuds dispensary.`} />

@@ -198,7 +198,7 @@ const Support = () => {
   const locationConfig = useGeoLocation();
 
   return (
-    <PageTransition>
+    <PageTransition variant="premium">
       <SEOHead 
         title="Support & FAQ | Healing Buds"
         description="Get answers to frequently asked questions about medical cannabis eligibility, ordering, delivery, and more. Contact our support team for assistance."
