@@ -6,7 +6,7 @@
  */
 
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { Menu, X, LogOut, LayoutDashboard, User } from "lucide-react";
+import { LogOut, LayoutDashboard, User } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 import { motion, useScroll, useSpring } from "framer-motion";
@@ -20,6 +20,7 @@ import LanguageSwitcher from "@/components/LanguageSwitcher";
 import ThemeToggle from "@/components/ThemeToggle";
 import NavigationMenu from "@/components/NavigationMenu";
 import NavigationOverlay from "@/components/NavigationOverlay";
+import AnimatedMenuButton from "@/components/AnimatedMenuButton";
 
 interface HeaderProps {
   onMenuStateChange?: (isOpen: boolean) => void;
@@ -206,24 +207,11 @@ const Header = ({ onMenuStateChange }: HeaderProps) => {
               {/* Mobile Menu Button - EXTREME RIGHT */}
               <div className="xl:hidden flex items-center gap-2">
                 <ThemeToggle />
-                <button
-                  type="button"
-                  className={cn(
-                    "text-white p-2.5 rounded-lg transition-all duration-300",
-                    "hover:bg-white/10 active:bg-white/20",
-                    "min-h-[44px] min-w-[44px] flex items-center justify-center",
-                    "ml-auto" // Force to extreme right
-                  )}
+                <AnimatedMenuButton
+                  isOpen={mobileMenuOpen}
                   onClick={() => setMobileMenuOpen(prev => !prev)}
-                  aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
-                  aria-expanded={mobileMenuOpen}
-                >
-                  {mobileMenuOpen ? (
-                    <X className="w-6 h-6" />
-                  ) : (
-                    <Menu className="w-6 h-6" />
-                  )}
-                </button>
+                  className="ml-auto"
+                />
               </div>
             </div>
           </div>

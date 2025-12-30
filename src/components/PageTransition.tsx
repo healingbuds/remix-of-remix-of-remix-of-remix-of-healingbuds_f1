@@ -3,7 +3,7 @@ import { ReactNode } from "react";
 
 interface PageTransitionProps {
   children: ReactNode;
-  variant?: "fade" | "slide" | "scale" | "elegant" | "smooth";
+  variant?: "fade" | "slide" | "scale" | "elegant" | "smooth" | "premium";
 }
 
 const variants = {
@@ -43,6 +43,16 @@ const variants = {
     transition: { 
       duration: 0.3, 
       ease: [0.4, 0, 0.2, 1] as const
+    } as Transition
+  },
+  premium: {
+    initial: { opacity: 0, y: 12, filter: "blur(4px)" },
+    animate: { opacity: 1, y: 0, filter: "blur(0px)" },
+    exit: { opacity: 0, y: -8, filter: "blur(2px)" },
+    transition: { 
+      duration: 0.45, 
+      ease: [0.16, 1, 0.3, 1] as const,
+      filter: { duration: 0.3 }
     } as Transition
   }
 };
