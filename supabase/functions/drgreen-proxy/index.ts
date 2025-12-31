@@ -26,10 +26,16 @@ const OWNERSHIP_ACTIONS = [
 // Public actions that don't require authentication (minimal - only webhooks/health)
 const PUBLIC_ACTIONS: string[] = [];
 
-// Authenticated but no ownership check needed (strains require auth but not client ownership)
-const AUTH_ONLY_ACTIONS = [
+// Country-gated actions: open countries (ZA, TH) don't require auth, restricted (GB, PT) do
+const COUNTRY_GATED_ACTIONS = [
   'get-strains', 'get-all-strains', 'get-strains-legacy', 'get-strain'
 ];
+
+// Open countries where unauthenticated users can browse products
+const OPEN_COUNTRIES = ['ZAF', 'THA'];
+
+// Authenticated but no ownership check needed
+const AUTH_ONLY_ACTIONS: string[] = [];
 
 /**
  * Verify user authentication and return user data
@@ -282,27 +288,46 @@ serve(async (req) => {
     // Check if action is public (no auth required)
     const isPublicAction = PUBLIC_ACTIONS.includes(action);
     
+    // Check if action is country-gated (open countries don't require auth)
+    const isCountryGatedAction = COUNTRY_GATED_ACTIONS.includes(action);
+    
     // Check if action only requires authentication (no ownership check)
     const isAuthOnlyAction = AUTH_ONLY_ACTIONS.includes(action);
     
-    if (!isPublicAction) {
-      // Verify user authentication
+    // Handle country-gated actions (strains)
+    if (isCountryGatedAction) {
+      const countryCode = body?.countryCode;
+      const isOpenCountry = countryCode && OPEN_COUNTRIES.includes(countryCode);
+      
+      if (isOpenCountry) {
+        // Open countries (ZA, TH) can access without auth
+        console.log(`[Audit] Unauthenticated access to ${action} for open country: ${countryCode}`);
+      } else {
+        // Restricted countries (GB, PT) or no country specified require auth
+        const authResult = await verifyAuthentication(req);
+        
+        if (!authResult) {
+          console.warn(`[Security] Unauthenticated request to ${action} for country: ${countryCode || 'unspecified'}`);
+          return new Response(
+            JSON.stringify({ error: 'Authentication required. Please sign in to view products.' }),
+            { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+        console.log(`[Audit] Authenticated user ${authResult.user.id} accessing ${action} for country: ${countryCode}`);
+      }
+    } else if (!isPublicAction) {
+      // Non-country-gated, non-public actions require authentication
       const authResult = await verifyAuthentication(req);
       
       if (!authResult) {
         console.warn(`[Security] Unauthenticated request to ${action}`);
         return new Response(
-          JSON.stringify({ error: 'Authentication required. Please sign in to view products.' }),
+          JSON.stringify({ error: 'Authentication required' }),
           { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
 
       const { user, supabaseClient } = authResult;
-      
-      // Auth-only actions: just need to be logged in
-      if (isAuthOnlyAction) {
-        console.log(`[Audit] Authenticated user ${user.id} (${user.email}) accessing ${action}`);
-      }
 
       // Check admin role for admin-only endpoints
       if (ADMIN_ACTIONS.includes(action)) {

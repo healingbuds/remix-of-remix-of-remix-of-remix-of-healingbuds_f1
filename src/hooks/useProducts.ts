@@ -220,58 +220,15 @@ export function useProducts(countryCode: string = 'PT') {
         return;
       }
       
-      // Log API error/warning
+      // Log API error/warning - no local fallback, always use Dr Green API
       if (fnError) {
-        console.warn('Dr Green API error, falling back to local DB:', fnError);
+        console.error('Dr Green API error:', fnError);
+        throw new Error(fnError.message || 'Failed to fetch products from Dr Green API');
       } else {
-        console.warn('Dr Green API returned no strains, falling back to local DB. Response:', data);
-      }
-
-      // Fallback: Fetch from local strains table
-      console.log('Fetching strains from local database...');
-      const { data: localStrains, error: dbError } = await supabase
-        .from('strains')
-        .select('*')
-        .eq('is_archived', false)
-        .order('name', { ascending: true })
-        .limit(100);
-
-      if (dbError) {
-        console.error('Local DB error:', dbError);
-        throw new Error('Failed to fetch products');
-      }
-
-      if (localStrains && localStrains.length > 0) {
-        console.log(`Loaded ${localStrains.length} strains from local database`);
-        
-        const transformedProducts: Product[] = localStrains.map((strain, index) => {
-          // Use branded jar image based on strain name, fallback to index
-          const imageUrl = getBrandedImage(strain.name);
-
-          return {
-            id: strain.id,
-            name: strain.name,
-            description: strain.description || '',
-            thcContent: strain.thc_content || 0,
-            cbdContent: strain.cbd_content || 0,
-            retailPrice: strain.retail_price || 0,
-            availability: strain.availability ?? true,
-            stock: strain.stock || 0,
-            imageUrl,
-            effects: strain.feelings || [],
-            terpenes: strain.flavors || [],
-            category: strain.type || 'Hybrid',
-            dataSource: 'api' as DataSource, // Mark as API since it came from synced data
-          };
-        });
-
-        setProducts(transformedProducts);
-        setDataSource('api');
-        setError(null);
-      } else {
+        console.warn('Dr Green API returned no strains. Response:', data);
         setProducts([]);
         setDataSource('none');
-        setError('No products available');
+        setError('No products available in your region');
       }
       
     } catch (err) {
@@ -284,32 +241,6 @@ export function useProducts(countryCode: string = 'PT') {
     }
   }, [countryCode]);
 
-  // Trigger sync from Dr Green API to local DB
-  const syncFromApi = useCallback(async () => {
-    console.log('Triggering strain sync from Dr Green API...');
-    try {
-      const alpha3Code = countryCodeMap[countryCode] || 'PRT';
-      const { data, error } = await supabase.functions.invoke('sync-strains', {
-        body: {
-          countryCode: alpha3Code,
-          take: 100,
-          page: 1,
-        },
-      });
-      if (error) {
-        console.error('Sync error:', error);
-        return { success: false, error: error.message };
-      }
-      console.log('Sync result:', data);
-      // Refetch products after sync
-      await fetchProducts();
-      return data;
-    } catch (err) {
-      console.error('Sync exception:', err);
-      return { success: false, error: 'Sync failed' };
-    }
-  }, [fetchProducts, countryCode]);
-
   useEffect(() => {
     fetchProducts();
   }, [fetchProducts]);
@@ -320,6 +251,5 @@ export function useProducts(countryCode: string = 'PT') {
     error,
     dataSource,
     refetch: fetchProducts,
-    syncFromApi,
   };
 }

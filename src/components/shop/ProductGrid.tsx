@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Filter, Leaf, X, RefreshCw, Database, Cloud, AlertCircle, Bug } from 'lucide-react';
+import { Search, Filter, Leaf, X, Cloud, AlertCircle, Bug } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -22,26 +22,23 @@ import { ProductCard } from './ProductCard';
 import { CultivarQuickView } from './CultivarQuickView';
 import { Product, useProducts, DataSource } from '@/hooks/useProducts';
 import { useShop } from '@/context/ShopContext';
-import { useToast } from '@/hooks/use-toast';
 
 const categories = ['All', 'Sativa', 'Indica', 'Hybrid', 'CBD'];
 
-const dataSourceInfo: Record<DataSource, { icon: typeof Database; label: string; color: string }> = {
+const dataSourceInfo: Record<DataSource, { icon: typeof Cloud; label: string; color: string }> = {
   api: { icon: Cloud, label: 'Dr Green API', color: 'text-sky-400' },
   none: { icon: AlertCircle, label: 'No Data', color: 'text-amber-400' },
 };
 
 export function ProductGrid() {
   const { countryCode } = useShop();
-  const { products, isLoading, error, dataSource, syncFromApi, refetch } = useProducts(countryCode);
-  const { toast } = useToast();
+  const { products, isLoading, error, dataSource, refetch } = useProducts(countryCode);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [sortBy, setSortBy] = useState('name');
   const [showAvailableOnly, setShowAvailableOnly] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [showDebug, setShowDebug] = useState(false);
-  const [isSyncing, setIsSyncing] = useState(false);
 
   // Filter and sort products
   const filteredProducts = products
@@ -74,27 +71,6 @@ export function ProductGrid() {
     setSelectedCategory('All');
     setSortBy('name');
     setShowAvailableOnly(false);
-  };
-
-  const handleSync = async () => {
-    setIsSyncing(true);
-    try {
-      const result = await syncFromApi();
-      if (result?.success) {
-        toast({
-          title: "Sync Complete",
-          description: `Synced ${result.synced} cultivars from Dr Green API`,
-        });
-      } else {
-        toast({
-          title: "Sync Failed",
-          description: result?.error || "Failed to sync cultivars",
-          variant: "destructive",
-        });
-      }
-    } finally {
-      setIsSyncing(false);
-    }
   };
 
   const hasActiveFilters =
@@ -234,18 +210,6 @@ export function ProductGrid() {
             <SourceIcon className="h-3.5 w-3.5" />
             <span className="font-medium">{dataSourceInfo[dataSource].label}</span>
           </div>
-          
-          {/* Sync button */}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleSync}
-            disabled={isSyncing}
-            className="h-8 text-xs"
-          >
-            <RefreshCw className={`mr-1.5 h-3 w-3 ${isSyncing ? 'animate-spin' : ''}`} />
-            {isSyncing ? 'Syncing...' : 'Sync from API'}
-          </Button>
           
           {/* Debug toggle */}
           <Button
