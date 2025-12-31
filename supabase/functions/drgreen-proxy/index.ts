@@ -23,8 +23,11 @@ const OWNERSHIP_ACTIONS = [
   'place-order', 'get-order', 'get-orders'
 ];
 
-// Public actions that don't require authentication
-const PUBLIC_ACTIONS = [
+// Public actions that don't require authentication (minimal - only webhooks/health)
+const PUBLIC_ACTIONS: string[] = [];
+
+// Authenticated but no ownership check needed (strains require auth but not client ownership)
+const AUTH_ONLY_ACTIONS = [
   'get-strains', 'get-all-strains', 'get-strains-legacy', 'get-strain'
 ];
 
@@ -279,6 +282,9 @@ serve(async (req) => {
     // Check if action is public (no auth required)
     const isPublicAction = PUBLIC_ACTIONS.includes(action);
     
+    // Check if action only requires authentication (no ownership check)
+    const isAuthOnlyAction = AUTH_ONLY_ACTIONS.includes(action);
+    
     if (!isPublicAction) {
       // Verify user authentication
       const authResult = await verifyAuthentication(req);
@@ -286,12 +292,17 @@ serve(async (req) => {
       if (!authResult) {
         console.warn(`[Security] Unauthenticated request to ${action}`);
         return new Response(
-          JSON.stringify({ error: 'Authentication required' }),
+          JSON.stringify({ error: 'Authentication required. Please sign in to view products.' }),
           { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
 
       const { user, supabaseClient } = authResult;
+      
+      // Auth-only actions: just need to be logged in
+      if (isAuthOnlyAction) {
+        console.log(`[Audit] Authenticated user ${user.id} (${user.email}) accessing ${action}`);
+      }
 
       // Check admin role for admin-only endpoints
       if (ADMIN_ACTIONS.includes(action)) {
