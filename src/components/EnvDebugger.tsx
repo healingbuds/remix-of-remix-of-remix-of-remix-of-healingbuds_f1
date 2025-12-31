@@ -14,9 +14,8 @@ export default function EnvDebugger() {
 
   const envVars: EnvVar[] = [
     { name: 'NODE_ENV', value: import.meta.env.MODE },
-    { name: 'NEXT_PUBLIC_API_URL', value: import.meta.env.NEXT_PUBLIC_API_URL },
-    { name: 'VITE_API_URL', value: import.meta.env.VITE_API_URL },
     { name: 'VITE_SUPABASE_URL', value: import.meta.env.VITE_SUPABASE_URL },
+    { name: 'VITE_SUPABASE_PUBLISHABLE_KEY', value: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ? '✓ Set' : undefined },
     { name: 'VITE_SUPABASE_PROJECT_ID', value: import.meta.env.VITE_SUPABASE_PROJECT_ID },
   ];
 
