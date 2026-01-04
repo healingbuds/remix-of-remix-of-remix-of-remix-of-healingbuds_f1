@@ -139,17 +139,27 @@ const Header = ({ onMenuStateChange }: HeaderProps) => {
               scrolled ? "h-16" : "h-20"
             )}>
               
-              {/* Logo - Far Left (Theme Aware) */}
+              {/* Logo - Far Left with Crossfade Transition */}
               <Link 
                 to="/" 
-                className="flex items-center flex-shrink-0 group"
+                className="flex items-center flex-shrink-0 group relative"
               >
+                {/* White logo (visible when not scrolled) */}
                 <img 
-                  src={logoSrc} 
+                  src={tenant.logo.dark} 
                   alt={tenant.name}
                   className={cn(
-                    "w-auto object-contain transition-all duration-500 group-hover:opacity-90",
-                    scrolled ? "h-9 sm:h-10" : "h-11 sm:h-12"
+                    "w-auto object-contain transition-all duration-500 ease-out group-hover:opacity-90",
+                    scrolled ? "h-9 sm:h-10 opacity-0" : "h-11 sm:h-12 opacity-100"
+                  )}
+                />
+                {/* Teal logo (visible when scrolled) - absolute positioned for crossfade */}
+                <img 
+                  src={tenant.logo.light} 
+                  alt={tenant.name}
+                  className={cn(
+                    "w-auto object-contain transition-all duration-500 ease-out group-hover:opacity-90 absolute left-0",
+                    scrolled ? "h-9 sm:h-10 opacity-100" : "h-11 sm:h-12 opacity-0"
                   )}
                 />
               </Link>
