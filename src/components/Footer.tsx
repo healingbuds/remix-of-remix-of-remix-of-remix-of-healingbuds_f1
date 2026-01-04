@@ -1,15 +1,16 @@
-import hbLogoWhite from "@/assets/hb-logo-white-new.png";
 import drGreenLogo from "@/assets/drgreen-nft-logo.png";
 import { Link } from "react-router-dom";
 import { Mail, MapPin } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useGeoLocation } from "@/hooks/useGeoLocation";
+import { useTenant } from "@/hooks/useTenant";
 import HBIcon from "@/components/HBIcon";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
   const { t } = useTranslation('common');
   const locationConfig = useGeoLocation();
+  const { tenant } = useTenant();
   
   return (
     <footer id="contact" className="text-white relative overflow-hidden" style={{ backgroundColor: 'hsl(var(--section-color))' }}>
@@ -22,13 +23,13 @@ const Footer = () => {
             <div className="lg:col-span-4">
               <Link to="/" className="inline-block mb-5 group">
                 <img 
-                  src={hbLogoWhite} 
-                  alt="Healing Buds Logo" 
+                  src={tenant.logo.dark} 
+                  alt={`${tenant.name} Logo`} 
                   className="h-10 min-w-[100px] w-auto object-contain group-hover:opacity-80 transition-opacity"
                 />
               </Link>
               <p className="font-body text-white/70 text-sm leading-relaxed mb-6">
-                Pharmaceutical-grade medical cannabis for qualifying patients. EU GMP certified with full seed-to-sale traceability.
+                {tenant.description}
               </p>
               <div className="space-y-3">
                 <div className="flex items-start gap-3 text-white/60 text-sm group">
@@ -134,7 +135,7 @@ const Footer = () => {
           {/* Top row: Copyright and Dr. Green logo */}
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
             <p className="font-body text-white/50 text-xs">
-              © {currentYear} Healing Buds. All rights reserved.
+              © {currentYear} {tenant.name}. All rights reserved.
             </p>
             
             {/* Dr. Green NFT Partnership Logo - with "Powered by" text */}

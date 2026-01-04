@@ -56,11 +56,8 @@ const Index = () => {
 
   return (
     <PageTransition variant="premium">
-      <SEOHead 
-        title="Healing Buds | Medical Cannabis Dispensary"
-        description="Access pharmaceutical-grade medical cannabis products. Complete our secure medical assessment to check your eligibility for treatment."
-        canonical="/"
-      />
+      {/* SEO now uses tenant defaults automatically */}
+      <SEOHead canonical="/" />
       <div className="min-h-screen bg-background pb-20 lg:pb-0">
         <Header onMenuStateChange={setMenuOpen} />
         

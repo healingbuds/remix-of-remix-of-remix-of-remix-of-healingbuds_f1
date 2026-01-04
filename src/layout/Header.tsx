@@ -16,14 +16,14 @@ import { User as SupabaseUser } from "@supabase/supabase-js";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "react-i18next";
 import { useTheme } from "next-themes";
-import hbLogoWhite from "@/assets/hb-logo-white-new.png";
-import hbLogoGreen from "@/assets/hb-logo-green.png";
+import { useTenant } from "@/hooks/useTenant";
 import EligibilityDialog from "@/components/EligibilityDialog";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import ThemeToggle from "@/components/ThemeToggle";
 import NavigationMenu from "@/components/NavigationMenu";
 import NavigationOverlay from "@/components/NavigationOverlay";
 import AnimatedMenuButton from "@/components/AnimatedMenuButton";
+import { WalletButton } from "@/components/WalletConnectionModal";
 
 interface HeaderProps {
   onMenuStateChange?: (isOpen: boolean) => void;
@@ -39,9 +39,13 @@ const Header = ({ onMenuStateChange }: HeaderProps) => {
   const { toast } = useToast();
   const { t } = useTranslation('common');
   const { resolvedTheme } = useTheme();
+  const { tenant } = useTenant();
   const headerRef = useRef<HTMLElement>(null);
   
   const isDark = resolvedTheme === 'dark';
+  
+  // Dynamic tenant logo
+  const logoSrc = isDark ? tenant.logo.dark : tenant.logo.light;
   
   // Scroll progress tracking
   const { scrollYProgress } = useScroll();
@@ -144,8 +148,8 @@ const Header = ({ onMenuStateChange }: HeaderProps) => {
                 className="flex items-center flex-shrink-0 group"
               >
                 <img 
-                  src={isDark ? hbLogoWhite : hbLogoGreen} 
-                  alt="Healing Buds"
+                  src={logoSrc} 
+                  alt={tenant.name}
                   className={cn(
                     "w-auto object-contain transition-all duration-500 group-hover:opacity-90",
                     scrolled ? "h-9 sm:h-10" : "h-11 sm:h-12"
@@ -160,6 +164,9 @@ const Header = ({ onMenuStateChange }: HeaderProps) => {
               <div className="hidden xl:flex items-center gap-3 flex-shrink-0">
                 <LanguageSwitcher scrolled={scrolled} />
                 <ThemeToggle isDark={isDark} />
+                
+                {/* Wallet Connection Button - dApp Hydration Layer */}
+                <WalletButton className="ml-1" />
 
                 <div className="flex items-center gap-2 ml-3">
                   {/* Check Eligibility - Emerald Green CTA */}

@@ -20,6 +20,7 @@ import { ShopProvider } from "@/context/ShopContext";
 import { CursorProvider } from "@/context/CursorContext";
 import { WalletProvider } from "@/providers/WalletProvider";
 import { WalletContextProvider } from "@/context/WalletContext";
+import { TenantProvider } from "@/context/TenantContext";
 
 
 // Lazy load pages for better performance
@@ -161,12 +162,14 @@ const App = () => (
                     <Toaster />
                     <Sonner />
                     <BrowserRouter>
-                      <SkipLinks />
-                      <ScrollToTop />
-                      <RouteProgress />
-                      <main id="main-content" tabIndex={-1}>
-                        <AnimatedRoutes />
-                      </main>
+                      <TenantProvider>
+                        <SkipLinks />
+                        <ScrollToTop />
+                        <RouteProgress />
+                        <main id="main-content" tabIndex={-1}>
+                          <AnimatedRoutes />
+                        </main>
+                      </TenantProvider>
                     </BrowserRouter>
                   </CursorFollower>
                 </ShopProvider>

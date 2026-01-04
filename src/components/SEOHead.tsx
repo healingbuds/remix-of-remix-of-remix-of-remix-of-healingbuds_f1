@@ -1,4 +1,5 @@
 import { Helmet } from 'react-helmet-async';
+import { useTenant } from '@/hooks/useTenant';
 
 interface SEOHeadProps {
   title?: string;
@@ -12,15 +13,22 @@ interface SEOHeadProps {
 }
 
 const SEOHead = ({
-  title = 'Healing Buds | Shaping the Future of Cannabis',
-  description = 'Leading the world in cannabis research and EU GMP-certified medical cannabis products. Consistently delivering superior products and driving global acceptance.',
-  keywords = 'medical cannabis, CBD, THC, EU GMP, cannabis research, Healing Buds, Portugal cannabis, medical marijuana',
+  title,
+  description,
+  keywords,
   canonical,
   ogImage = '/assets/hb-logo-square.png',
   ogType = 'website',
   twitterCard = 'summary_large_image',
   structuredData,
 }: SEOHeadProps) => {
+  const { tenant } = useTenant();
+  
+  // Use tenant defaults if not provided
+  const resolvedTitle = title || tenant.seo.defaultTitle;
+  const resolvedDescription = description || tenant.seo.defaultDescription;
+  const resolvedKeywords = keywords || tenant.seo.keywords;
+  
   const baseUrl = 'https://healingbuds.co.za';
   const fullCanonical = canonical ? `${baseUrl}${canonical}` : baseUrl;
   const fullOgImage = ogImage.startsWith('http') ? ogImage : `${baseUrl}${ogImage}`;
@@ -28,14 +36,14 @@ const SEOHead = ({
   const defaultStructuredData = {
     '@context': 'https://schema.org',
     '@type': 'Organization',
-    name: 'Healing Buds',
+    name: tenant.name,
     url: baseUrl,
     logo: `${baseUrl}/assets/hb-logo-square.png`,
-    description: description,
+    description: resolvedDescription,
     sameAs: [
-      'https://twitter.com/healingbuds',
-      'https://linkedin.com/company/healingbuds',
-    ],
+      tenant.social.twitter,
+      tenant.social.linkedin,
+    ].filter(Boolean),
     contactPoint: {
       '@type': 'ContactPoint',
       email: 'info@healingbuds.co.za',
@@ -46,29 +54,29 @@ const SEOHead = ({
   return (
     <Helmet>
       {/* Primary Meta Tags */}
-      <title>{title}</title>
-      <meta name="title" content={title} />
-      <meta name="description" content={description} />
-      <meta name="keywords" content={keywords} />
+      <title>{resolvedTitle}</title>
+      <meta name="title" content={resolvedTitle} />
+      <meta name="description" content={resolvedDescription} />
+      <meta name="keywords" content={resolvedKeywords} />
       <meta name="robots" content="index, follow" />
       <meta name="language" content="English" />
-      <meta name="author" content="Healing Buds" />
+      <meta name="author" content={tenant.name} />
       <link rel="canonical" href={fullCanonical} />
 
       {/* Open Graph / Facebook */}
       <meta property="og:type" content={ogType} />
       <meta property="og:url" content={fullCanonical} />
-      <meta property="og:title" content={title} />
-      <meta property="og:description" content={description} />
+      <meta property="og:title" content={resolvedTitle} />
+      <meta property="og:description" content={resolvedDescription} />
       <meta property="og:image" content={fullOgImage} />
-      <meta property="og:site_name" content="Healing Buds" />
+      <meta property="og:site_name" content={tenant.name} />
       <meta property="og:locale" content="en_ZA" />
 
       {/* Twitter */}
       <meta name="twitter:card" content={twitterCard} />
       <meta name="twitter:url" content={fullCanonical} />
-      <meta name="twitter:title" content={title} />
-      <meta name="twitter:description" content={description} />
+      <meta name="twitter:title" content={resolvedTitle} />
+      <meta name="twitter:description" content={resolvedDescription} />
       <meta name="twitter:image" content={fullOgImage} />
 
       {/* Structured Data */}

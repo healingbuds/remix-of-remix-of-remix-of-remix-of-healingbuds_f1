@@ -19,8 +19,13 @@ import '@rainbow-me/rainbowkit/styles.css';
  * - MetaMask and other ERC-721 compatible wallets supported via RainbowKit
  * - Admin-only feature - not exposed to customer-facing UI
  */
+/**
+ * Note: App name is set to a generic value here since getDefaultConfig
+ * runs before React context is available. The actual tenant name
+ * is displayed in the UI components that use useTenant.
+ */
 const config = getDefaultConfig({
-  appName: 'Healing Buds Admin',
+  appName: 'Cannabis Platform',
   projectId: 'healing-buds-admin', // WalletConnect Cloud project ID - replace with production ID
   chains: [mainnet],
   transports: {
