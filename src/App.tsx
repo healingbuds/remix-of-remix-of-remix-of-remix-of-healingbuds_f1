@@ -77,12 +77,8 @@ const AnimatedRoutes = () => {
             </ComplianceGuard>
           } />
           
-          {/* Shop - Protected by ComplianceGuard */}
-          <Route path="/shop" element={
-            <ComplianceGuard>
-              <Shop />
-            </ComplianceGuard>
-          } />
+          {/* Shop - Uses RestrictedRegionGate for per-country access control */}
+          <Route path="/shop" element={<Shop />} />
           <Route path="/shop/register" element={<ShopRegister />} />
           <Route path="/shop/cultivar/:cultivarId" element={
             <ComplianceGuard>
