@@ -79,7 +79,8 @@ const ADMIN_ACTIONS = [
   'dapp-orders', 'dapp-order-details', 'dapp-update-order',
   'dapp-carts', 'dapp-nfts', 'dapp-strains', 'dapp-clients-list',
   'update-order', 'update-client', 'delete-client', 'patch-client',
-  'activate-client', 'deactivate-client', 'bulk-delete-clients'
+  'activate-client', 'deactivate-client', 'bulk-delete-clients',
+  'api-diagnostics', 'test-create-client'
 ];
 
 // Actions that require ownership verification (user must own the resource)
@@ -89,8 +90,8 @@ const OWNERSHIP_ACTIONS = [
   'place-order', 'get-order', 'get-orders'
 ];
 
-// Public actions that don't require authentication (minimal - only webhooks/health/diagnostics/testing)
-const PUBLIC_ACTIONS: string[] = ['api-diagnostics', 'health', 'drgreen-health', 'test-create-client'];
+// Public actions that don't require authentication (minimal - only webhooks/health)
+const PUBLIC_ACTIONS: string[] = ['health', 'drgreen-health'];
 
 // Country-gated actions: open countries (ZA, TH) don't require auth, restricted (GB, PT) do
 const COUNTRY_GATED_ACTIONS = [
@@ -130,6 +131,147 @@ function validateEmail(email: unknown): boolean {
 
 function validateStringLength(value: unknown, maxLength: number): boolean {
   return typeof value === 'string' && value.length <= maxLength;
+}
+
+/**
+ * Validate cart item structure
+ */
+function validateCartItem(item: unknown): { valid: boolean; error?: string } {
+  if (typeof item !== 'object' || item === null) {
+    return { valid: false, error: 'Cart item must be an object' };
+  }
+  
+  const cartItem = item as Record<string, unknown>;
+  
+  // Validate strainId
+  if (!cartItem.strainId || typeof cartItem.strainId !== 'string' || cartItem.strainId.length > 100) {
+    return { valid: false, error: 'Invalid strainId' };
+  }
+  
+  // Validate quantity
+  if (cartItem.quantity !== undefined) {
+    const qty = Number(cartItem.quantity);
+    if (isNaN(qty) || qty < 1 || qty > 100) {
+      return { valid: false, error: 'Quantity must be between 1 and 100' };
+    }
+  }
+  
+  return { valid: true };
+}
+
+/**
+ * Validate cart data structure
+ */
+function validateCartData(data: unknown): { valid: boolean; error?: string } {
+  if (typeof data !== 'object' || data === null) {
+    return { valid: false, error: 'Cart data must be an object' };
+  }
+  
+  const cartData = data as Record<string, unknown>;
+  
+  // Validate clientId
+  if (!validateClientId(cartData.clientId)) {
+    return { valid: false, error: 'Invalid clientId' };
+  }
+  
+  // Validate items array if present
+  if (cartData.items !== undefined) {
+    if (!Array.isArray(cartData.items)) {
+      return { valid: false, error: 'Items must be an array' };
+    }
+    if (cartData.items.length > 50) {
+      return { valid: false, error: 'Maximum 50 items allowed' };
+    }
+    for (let i = 0; i < cartData.items.length; i++) {
+      const itemValidation = validateCartItem(cartData.items[i]);
+      if (!itemValidation.valid) {
+        return { valid: false, error: `Item ${i}: ${itemValidation.error}` };
+      }
+    }
+  }
+  
+  return { valid: true };
+}
+
+/**
+ * Validate order data structure
+ */
+function validateOrderData(data: unknown): { valid: boolean; error?: string } {
+  if (typeof data !== 'object' || data === null) {
+    return { valid: false, error: 'Order data must be an object' };
+  }
+  
+  const orderData = data as Record<string, unknown>;
+  
+  // Validate clientId
+  if (!validateClientId(orderData.clientId)) {
+    return { valid: false, error: 'Invalid clientId' };
+  }
+  
+  // Validate cartId if present
+  if (orderData.cartId && !validateStringLength(orderData.cartId, 100)) {
+    return { valid: false, error: 'Invalid cartId format' };
+  }
+  
+  // Validate shipping address if present
+  if (orderData.shippingAddress) {
+    if (typeof orderData.shippingAddress !== 'object') {
+      return { valid: false, error: 'Shipping address must be an object' };
+    }
+    const addr = orderData.shippingAddress as Record<string, unknown>;
+    if (addr.street && !validateStringLength(addr.street, 200)) {
+      return { valid: false, error: 'Street address too long' };
+    }
+    if (addr.city && !validateStringLength(addr.city, 100)) {
+      return { valid: false, error: 'City name too long' };
+    }
+    if (addr.postalCode && !validateStringLength(addr.postalCode, 20)) {
+      return { valid: false, error: 'Postal code too long' };
+    }
+    if (addr.country && !validateCountryCode(addr.country)) {
+      return { valid: false, error: 'Invalid country code' };
+    }
+  }
+  
+  return { valid: true };
+}
+
+/**
+ * Validate patch client data structure
+ */
+function validatePatchClientData(data: unknown): { valid: boolean; error?: string } {
+  if (typeof data !== 'object' || data === null) {
+    return { valid: false, error: 'Patch data must be an object' };
+  }
+  
+  const patchData = data as Record<string, unknown>;
+  
+  // Limit number of fields that can be updated
+  const allowedFields = ['email', 'firstName', 'lastName', 'phone', 'address', 'status', 'isActive'];
+  const providedFields = Object.keys(patchData);
+  
+  if (providedFields.length > 10) {
+    return { valid: false, error: 'Too many fields in update' };
+  }
+  
+  // Validate specific field types
+  if (patchData.email !== undefined && !validateEmail(patchData.email)) {
+    return { valid: false, error: 'Invalid email format' };
+  }
+  
+  if (patchData.firstName !== undefined && !validateStringLength(patchData.firstName, 100)) {
+    return { valid: false, error: 'First name too long' };
+  }
+  
+  if (patchData.lastName !== undefined && !validateStringLength(patchData.lastName, 100)) {
+    return { valid: false, error: 'Last name too long' };
+  }
+  
+  if (patchData.phone !== undefined && !validateStringLength(patchData.phone, 30)) {
+    return { valid: false, error: 'Phone number too long' };
+  }
+  
+  return { valid: true };
 }
 
 /**
@@ -1200,6 +1342,12 @@ serve(async (req) => {
         const cartData = body?.data;
         if (!cartData) throw new Error("Cart data is required");
         
+        // Validate cart data structure
+        const cartValidation = validateCartData(cartData);
+        if (!cartValidation.valid) {
+          throw new Error(cartValidation.error || "Invalid cart data");
+        }
+        
         response = await drGreenRequestBody("/carts", "POST", cartData);
         break;
       }
@@ -1254,6 +1402,12 @@ serve(async (req) => {
       case "place-order": {
         const orderData = body?.data;
         if (!orderData) throw new Error("Order data is required");
+        
+        // Validate order data structure
+        const orderValidation = validateOrderData(orderData);
+        if (!orderValidation.valid) {
+          throw new Error(orderValidation.error || "Invalid order data");
+        }
         
         response = await drGreenRequestBody("/orders", "POST", orderData);
         break;
@@ -1656,6 +1810,15 @@ serve(async (req) => {
         if (!validateClientId(body.clientId)) {
           throw new Error("Invalid client ID format");
         }
+        
+        // Validate patch data structure
+        if (body.data) {
+          const patchValidation = validatePatchClientData(body.data);
+          if (!patchValidation.valid) {
+            throw new Error(patchValidation.error || "Invalid patch data");
+          }
+        }
+        
         response = await drGreenRequest(`/dapp/clients/${body.clientId}`, "PATCH", body.data);
         break;
       }
