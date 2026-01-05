@@ -147,10 +147,10 @@ const AnimatedRoutes = () => {
 
 const App = () => (
   <ErrorBoundary>
-    <WalletProvider>
-      <ThemeProvider defaultTheme="light" storageKey="healing-buds-theme">
-        <CursorProvider>
-          <QueryClientProvider client={queryClient}>
+    <QueryClientProvider client={queryClient}>
+      <WalletProvider>
+        <ThemeProvider defaultTheme="light" storageKey="healing-buds-theme">
+          <CursorProvider>
             <TooltipProvider>
               <WalletContextProvider>
                 <ShopProvider>
@@ -171,10 +171,10 @@ const App = () => (
                 </ShopProvider>
               </WalletContextProvider>
             </TooltipProvider>
-          </QueryClientProvider>
-        </CursorProvider>
-      </ThemeProvider>
-    </WalletProvider>
+          </CursorProvider>
+        </ThemeProvider>
+      </WalletProvider>
+    </QueryClientProvider>
   </ErrorBoundary>
 );
 
