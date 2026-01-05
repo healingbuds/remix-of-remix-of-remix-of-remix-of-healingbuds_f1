@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,24 +11,15 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useToast } from "@/hooks/use-toast";
 import { useDrGreenApi } from "@/hooks/useDrGreenApi";
 import { 
   Search, 
-  MoreHorizontal, 
-  CheckCircle, 
   XCircle, 
-  Clock,
   RefreshCw,
   Users,
-  Filter
+  Filter,
+  ExternalLink
 } from "lucide-react";
 import {
   Select,
@@ -51,9 +42,7 @@ interface Client {
 }
 
 export function CustomerManagement() {
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
-  const { getDappClients, verifyDappClient } = useDrGreenApi();
+  const { getDappClients } = useDrGreenApi();
   
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -75,39 +64,6 @@ export function CustomerManagement() {
       return response.data;
     },
   });
-
-  // Verify/Reject mutation
-  const verifyMutation = useMutation({
-    mutationFn: async ({ clientId, action }: { clientId: string; action: "verify" | "reject" }) => {
-      const response = await verifyDappClient(clientId, action);
-      if (response.error) {
-        throw new Error(response.error);
-      }
-      return response.data;
-    },
-    onSuccess: (_, variables) => {
-      toast({
-        title: variables.action === "verify" ? "Client Approved" : "Client Rejected",
-        description: `KYC status updated successfully.`,
-      });
-      queryClient.invalidateQueries({ queryKey: ["dapp-clients"] });
-    },
-    onError: (error: Error) => {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to update client status",
-        variant: "destructive",
-      });
-    },
-  });
-
-  const handleVerify = (clientId: string) => {
-    verifyMutation.mutate({ clientId, action: "verify" });
-  };
-
-  const handleReject = (clientId: string) => {
-    verifyMutation.mutate({ clientId, action: "reject" });
-  };
 
   // Filter clients by search query - handle both array and paginated response
   const rawClients = Array.isArray(clientsData) 
@@ -177,7 +133,7 @@ export function CustomerManagement() {
           <div>
             <h2 className="text-xl font-semibold">Customer Management</h2>
             <p className="text-sm text-muted-foreground">
-              Manage customer KYC verification via Dr. Green API
+              View customer KYC status from Dr. Green API (read-only)
             </p>
           </div>
         </div>
@@ -212,6 +168,12 @@ export function CustomerManagement() {
         </Select>
       </div>
 
+      {/* Info banner */}
+      <div className="bg-muted/50 border border-border rounded-lg p-4 text-sm text-muted-foreground">
+        <strong>Note:</strong> Client approval is managed by the Dr. Green API. 
+        This view is read-only. Status changes occur automatically after KYC verification through the Dr. Green platform.
+      </div>
+
       {/* Table */}
       <div className="border rounded-lg overflow-hidden">
         <Table>
@@ -222,7 +184,7 @@ export function CustomerManagement() {
               <TableHead>KYC Status</TableHead>
               <TableHead>Admin Approval</TableHead>
               <TableHead>Created</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
+              <TableHead className="text-right">KYC Link</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -276,35 +238,19 @@ export function CustomerManagement() {
                     }
                   </TableCell>
                   <TableCell className="text-right">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button 
-                          variant="ghost" 
-                          size="icon"
-                          disabled={verifyMutation.isPending}
-                        >
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem
-                          onClick={() => handleVerify(client.clientId || client.id)}
-                          disabled={client.adminApproval === "VERIFIED"}
-                          className="text-emerald-600"
-                        >
-                          <CheckCircle className="mr-2 h-4 w-4" />
-                          Approve KYC
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() => handleReject(client.clientId || client.id)}
-                          disabled={client.adminApproval === "REJECTED"}
-                          className="text-destructive"
-                        >
-                          <XCircle className="mr-2 h-4 w-4" />
-                          Reject KYC
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                    {client.kycLink ? (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        asChild
+                      >
+                        <a href={client.kycLink} target="_blank" rel="noopener noreferrer">
+                          <ExternalLink className="h-4 w-4" />
+                        </a>
+                      </Button>
+                    ) : (
+                      <span className="text-muted-foreground text-sm">—</span>
+                    )}
                   </TableCell>
                 </TableRow>
               ))

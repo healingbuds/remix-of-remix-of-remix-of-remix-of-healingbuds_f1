@@ -1,18 +1,16 @@
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
 import {
   Globe,
   RefreshCw,
   CheckCircle2,
   XCircle,
   Loader2,
-  Shield,
   AlertTriangle,
   Package,
   Clock,
-  ArrowLeft,
   Calendar,
-  Zap
+  Zap,
+  Shield
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -20,9 +18,8 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import Header from '@/layout/Header';
-import Footer from '@/components/Footer';
 import { useNavigate } from 'react-router-dom';
+import { AdminLayout } from '@/components/admin/AdminLayout';
 
 interface CountryStatus {
   code: string;
@@ -213,89 +210,56 @@ const AdminStrainSync = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background">
-        <Header />
-        <main className="pt-32 pb-20">
-          <div className="container mx-auto px-4 flex justify-center">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          </div>
-        </main>
-        <Footer />
-      </div>
+      <AdminLayout title="Strain Sync" description="Loading...">
+        <div className="flex justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      </AdminLayout>
     );
   }
 
   if (!isAdmin) {
     return (
-      <div className="min-h-screen bg-background">
-        <Header />
-        <main className="pt-32 pb-20">
-          <div className="container mx-auto px-4 text-center">
-            <Card className="max-w-md mx-auto bg-card/50 backdrop-blur-sm border-border/50">
-              <CardContent className="pt-12 pb-8">
-                <AlertTriangle className="w-16 h-16 mx-auto mb-6 text-yellow-500" />
-                <h2 className="text-2xl font-bold text-foreground mb-4">Access Denied</h2>
-                <p className="text-muted-foreground mb-6">
-                  Admin privileges are required to access this page.
-                </p>
-                <Button onClick={() => navigate('/dashboard')}>
-                  Return to Dashboard
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
-        </main>
-        <Footer />
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Card className="max-w-md">
+          <CardContent className="pt-12 pb-8 text-center">
+            <AlertTriangle className="w-16 h-16 mx-auto mb-6 text-yellow-500" />
+            <h2 className="text-2xl font-bold text-foreground mb-4">Access Denied</h2>
+            <p className="text-muted-foreground mb-6">
+              Admin privileges are required.
+            </p>
+            <Button onClick={() => navigate('/dashboard')}>
+              Return to Dashboard
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      <main className="pt-32 pb-20">
-        <div className="container mx-auto px-4">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="max-w-5xl mx-auto"
-          >
-            {/* Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
-              <div>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="mb-2"
-                  onClick={() => navigate('/admin')}
-                >
-                  <ArrowLeft className="mr-2 h-4 w-4" />
-                  Back to Dashboard
-                </Button>
-                <div className="flex items-center gap-3 mb-2">
-                  <Shield className="h-8 w-8 text-primary" />
-                  <h1 className="text-3xl font-bold text-foreground">Strain Sync Dashboard</h1>
-                </div>
-                <p className="text-muted-foreground">
-                  View strain availability by country and trigger manual API syncs
-                </p>
-              </div>
-              <Button
-                onClick={syncAllCountries}
-                disabled={syncingAll || countries.some(c => c.isLoading)}
-              >
-                {syncingAll ? (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                ) : (
-                  <RefreshCw className="mr-2 h-4 w-4" />
-                )}
-                Sync All Countries
-              </Button>
-            </div>
+    <AdminLayout 
+      title="Strain Sync Dashboard" 
+      description="View strain availability by country and trigger manual API syncs"
+    >
+      {/* Sync All Button */}
+      <div className="flex justify-end mb-6">
+        <Button
+          onClick={syncAllCountries}
+          disabled={syncingAll || countries.some(c => c.isLoading)}
+        >
+          {syncingAll ? (
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          ) : (
+            <RefreshCw className="mr-2 h-4 w-4" />
+          )}
+          Sync All Countries
+        </Button>
+      </div>
 
-            {/* Summary Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-8">
-              <Card className="bg-card/50 backdrop-blur-sm border-border/50">
+      {/* Summary Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-8">
+        <Card>
                 <CardContent className="pt-6">
                   <div className="flex items-center gap-3">
                     <div className="p-2 rounded-lg bg-primary/10">
@@ -500,13 +464,9 @@ const AdminStrainSync = () => {
                     </div>
                   </CardContent>
                 </Card>
-              ))}
-            </div>
-          </motion.div>
-        </div>
-      </main>
-      <Footer />
-    </div>
+            ))}
+          </div>
+    </AdminLayout>
   );
 };
 

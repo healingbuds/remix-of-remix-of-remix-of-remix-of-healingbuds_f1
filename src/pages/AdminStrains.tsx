@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
 import { formatPrice } from '@/lib/currency';
 import {
   Leaf, 
@@ -7,7 +6,6 @@ import {
   Pencil,
   Trash2,
   Loader2,
-  Shield,
   AlertTriangle,
   Search,
   RefreshCw,
@@ -59,9 +57,8 @@ import {
 } from "@/components/ui/table";
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import Header from '@/layout/Header';
-import Footer from '@/components/Footer';
 import { useNavigate } from 'react-router-dom';
+import { AdminLayout } from '@/components/admin/AdminLayout';
 
 interface Strain {
   id: string;
@@ -313,104 +310,80 @@ const AdminStrains = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background">
-        <Header />
-        <main className="pt-32 pb-20">
-          <div className="container mx-auto px-4 flex justify-center">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          </div>
-        </main>
-        <Footer />
-      </div>
+      <AdminLayout title="Strain Management" description="Loading...">
+        <div className="flex justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      </AdminLayout>
     );
   }
 
   if (!isAdmin) {
     return (
-      <div className="min-h-screen bg-background">
-        <Header />
-        <main className="pt-32 pb-20">
-          <div className="container mx-auto px-4 text-center">
-            <Card className="max-w-md mx-auto bg-card/50 backdrop-blur-sm border-border/50">
-              <CardContent className="pt-12 pb-8">
-                <AlertTriangle className="w-16 h-16 mx-auto mb-6 text-yellow-500" />
-                <h2 className="text-2xl font-bold text-foreground mb-4">Access Denied</h2>
-                <p className="text-muted-foreground mb-6">
-                  You don't have permission to access this page. Admin privileges are required.
-                </p>
-                <Button onClick={() => navigate('/dashboard')}>
-                  Return to Dashboard
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
-        </main>
-        <Footer />
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Card className="max-w-md">
+          <CardContent className="pt-12 pb-8 text-center">
+            <AlertTriangle className="w-16 h-16 mx-auto mb-6 text-yellow-500" />
+            <h2 className="text-2xl font-bold text-foreground mb-4">Access Denied</h2>
+            <p className="text-muted-foreground mb-6">
+              Admin privileges are required.
+            </p>
+            <Button onClick={() => navigate('/dashboard')}>
+              Return to Dashboard
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      <main className="pt-32 pb-20">
-        <div className="container mx-auto px-4">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="max-w-7xl mx-auto"
+    <AdminLayout 
+      title="Strain Management" 
+      description={`Manage locally cached cultivar data • ${strains.length} cultivars`}
+    >
+      {/* Actions */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+        <div className="flex items-center gap-3">
+          <Button
+            variant="outline"
+            onClick={handleSync}
+            disabled={isSyncing}
           >
-            {/* Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
-              <div>
-                <div className="flex items-center gap-3 mb-2">
-                  <Shield className="h-8 w-8 text-primary" />
-                  <h1 className="text-3xl font-bold text-foreground">Admin: Cultivar Management</h1>
-                </div>
-                <p className="text-muted-foreground">
-                  Manage locally cached cultivar data • {strains.length} cultivars
-                </p>
-              </div>
-              <div className="flex items-center gap-3">
-                <Button
-                  variant="outline"
-                  onClick={handleSync}
-                  disabled={isSyncing}
-                >
-                  {isSyncing ? (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  ) : (
-                    <Cloud className="mr-2 h-4 w-4" />
-                  )}
-                  Sync from API
-                </Button>
-                <Button onClick={() => {
-                  setEditingStrain({ ...emptyStrain });
-                  setIsDialogOpen(true);
-                }}>
-                  <Plus className="mr-2 h-4 w-4" />
-                  Add Cultivar
-                </Button>
-              </div>
-            </div>
+            {isSyncing ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <Cloud className="mr-2 h-4 w-4" />
+            )}
+            Sync from API
+          </Button>
+          <Button onClick={() => {
+            setEditingStrain({ ...emptyStrain });
+            setIsDialogOpen(true);
+          }}>
+            <Plus className="mr-2 h-4 w-4" />
+            Add Cultivar
+          </Button>
+        </div>
+      </div>
 
-            {/* Search */}
-            <Card className="mb-6 bg-card/50 backdrop-blur-sm border-border/50">
-              <CardContent className="pt-6">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Search cultivars by name or SKU..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10"
-                  />
-                </div>
-              </CardContent>
-            </Card>
+      {/* Search */}
+      <Card className="mb-6">
+        <CardContent className="pt-6">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search cultivars by name or SKU..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+        </CardContent>
+      </Card>
 
-            {/* Strains Table */}
-            <Card className="bg-card/50 backdrop-blur-sm border-border/50">
+      {/* Strains Table */}
+      <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Database className="h-5 w-5" />
@@ -523,12 +496,9 @@ const AdminStrains = () => {
                     </TableBody>
                   </Table>
                 </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        </div>
-      </main>
-      <Footer />
+        </CardContent>
+      </Card>
+
 
       {/* Edit/Create Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -730,7 +700,7 @@ const AdminStrains = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </AdminLayout>
   );
 };
 
