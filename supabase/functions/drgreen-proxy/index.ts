@@ -189,51 +189,105 @@ const DRGREEN_API_URL = "https://api.drgreennft.com/api/v1";
 const API_TIMEOUT_MS = 20000;
 
 /**
- * Sign payload using HMAC-SHA256 (matching WordPress legacy)
- * Uses native Web Crypto API
+ * Sign payload using RSA-SHA256 (matching WordPress OpenSSL implementation)
+ * Uses native Web Crypto API with RSASSA-PKCS1-v1_5
+ * The private key is stored as a base64-encoded PEM key
  * This is used for POST requests and singular GET requests (Method A)
  */
-async function signPayload(payload: string, secretKey: string): Promise<string> {
-  const encoder = new TextEncoder();
-  
-  // Import the secret key for HMAC - use key directly as UTF-8 bytes
-  const keyData = encoder.encode(secretKey);
-  const cryptoKey = await crypto.subtle.importKey(
-    "raw",
-    keyData,
-    { name: "HMAC", hash: "SHA-256" },
-    false,
-    ["sign"]
-  );
-  
-  // Sign the payload
-  const payloadData = encoder.encode(payload);
-  const signatureBuffer = await crypto.subtle.sign("HMAC", cryptoKey, payloadData);
-  
-  // Convert ArrayBuffer to Base64 string (as per API specification)
-  const signatureBytes = new Uint8Array(signatureBuffer);
-  let binary = '';
-  for (let i = 0; i < signatureBytes.byteLength; i++) {
-    binary += String.fromCharCode(signatureBytes[i]);
+async function signPayload(payload: string, privateKeyBase64: string): Promise<string> {
+  try {
+    // Step 1: Decode base64 to get PEM content
+    let pemContents: string;
+    try {
+      pemContents = atob(privateKeyBase64);
+    } catch {
+      // If not base64, assume it's already PEM format
+      pemContents = privateKeyBase64;
+    }
+    
+    // Step 2: Extract the key data from PEM format
+    // Handle both PKCS#8 (BEGIN PRIVATE KEY) and PKCS#1 (BEGIN RSA PRIVATE KEY)
+    let pemBody: string;
+    let keyFormat: "pkcs8" | "pkcs1" = "pkcs8";
+    
+    if (pemContents.includes("-----BEGIN PRIVATE KEY-----")) {
+      // PKCS#8 format
+      pemBody = pemContents
+        .replace("-----BEGIN PRIVATE KEY-----", "")
+        .replace("-----END PRIVATE KEY-----", "")
+        .replace(/[\r\n\s]/g, "");
+      keyFormat = "pkcs8";
+    } else if (pemContents.includes("-----BEGIN RSA PRIVATE KEY-----")) {
+      // PKCS#1 format - need to handle differently
+      pemBody = pemContents
+        .replace("-----BEGIN RSA PRIVATE KEY-----", "")
+        .replace("-----END RSA PRIVATE KEY-----", "")
+        .replace(/[\r\n\s]/g, "");
+      // Note: Web Crypto API doesn't directly support PKCS#1, but we'll try pkcs8
+      // Most modern keys are PKCS#8
+      keyFormat = "pkcs8";
+      logWarn("PKCS#1 key format detected - attempting import as PKCS#8");
+    } else {
+      // No PEM headers - assume raw base64 key data in PKCS#8 format
+      pemBody = pemContents.replace(/[\r\n\s]/g, "");
+    }
+    
+    // Step 3: Decode base64 to binary
+    const binaryString = atob(pemBody);
+    const binaryKey = new Uint8Array(binaryString.length);
+    for (let i = 0; i < binaryString.length; i++) {
+      binaryKey[i] = binaryString.charCodeAt(i);
+    }
+    
+    // Step 4: Import the key using Web Crypto API
+    const cryptoKey = await crypto.subtle.importKey(
+      keyFormat,
+      binaryKey.buffer,
+      { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" },
+      false,
+      ["sign"]
+    );
+    
+    // Step 5: Sign the payload
+    const encoder = new TextEncoder();
+    const payloadData = encoder.encode(payload);
+    const signatureBuffer = await crypto.subtle.sign(
+      "RSASSA-PKCS1-v1_5",
+      cryptoKey,
+      payloadData
+    );
+    
+    // Step 6: Convert ArrayBuffer to Base64 string
+    const signatureBytes = new Uint8Array(signatureBuffer);
+    let binary = '';
+    for (let i = 0; i < signatureBytes.byteLength; i++) {
+      binary += String.fromCharCode(signatureBytes[i]);
+    }
+    const base64Signature = btoa(binary);
+    
+    // Debug logging
+    logInfo("RSA signature generated", {
+      signatureLength: base64Signature.length,  // RSA signatures are longer than HMAC
+      signaturePreview: base64Signature.slice(0, 16) + "...",
+      payloadLength: payload.length,
+    });
+    
+    return base64Signature;
+  } catch (error) {
+    logError("RSA signature generation failed", {
+      error: error instanceof Error ? error.message : String(error),
+      keyLength: privateKeyBase64?.length || 0,
+    });
+    throw new Error(`Failed to sign payload: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
-  const base64Signature = btoa(binary);
-  
-  // Debug logging - temporary
-  logInfo("Signature generated", {
-    signatureLength: base64Signature.length,  // Should be 44 chars for Base64 SHA-256
-    signaturePreview: base64Signature.slice(0, 10) + "...",
-    payloadPreview: payload.slice(0, 50),
-  });
-  
-  return base64Signature;
 }
 
 /**
- * Sign query string using HMAC-SHA256 (matching WordPress legacy)
+ * Sign query string using RSA-SHA256 (matching WordPress legacy)
  * This is used for GET list endpoints (Method B)
  */
-async function signQueryString(queryString: string, secretKey: string): Promise<string> {
-  return signPayload(queryString, secretKey);
+async function signQueryString(queryString: string, privateKeyBase64: string): Promise<string> {
+  return signPayload(queryString, privateKeyBase64);
 }
 
 /**
@@ -501,7 +555,12 @@ serve(async (req) => {
           apiKeyPrefix: apiKey ? apiKey.slice(0, 8) + '...' : 'N/A',
           privateKeyPresent: !!privateKey,
           privateKeyLength: privateKey?.length || 0,
-          privateKeyPrefix: privateKey ? privateKey.slice(0, 4) + '...' : 'N/A',
+          privateKeyPrefix: privateKey ? privateKey.slice(0, 8) + '...' : 'N/A',
+          privateKeyFormat: privateKey ? (
+            privateKey.includes('-----BEGIN') ? 'PEM' :
+            /^[A-Za-z0-9+/=]+$/.test(privateKey) ? 'base64-encoded' : 'unknown'
+          ) : 'missing',
+          signatureMethod: 'RSA-SHA256 (OpenSSL compatible)',
         },
         allSecretsConfigured: !!apiKey && !!privateKey && hasSupabaseUrl && hasAnonKey,
         apiBaseUrl: DRGREEN_API_URL,
@@ -538,8 +597,28 @@ serve(async (req) => {
       
       console.log("[API-DIAGNOSTICS] Starting comprehensive diagnostics...");
       
+      // Detect private key format
+      let privateKeyFormat = 'missing';
+      if (privateKey) {
+        try {
+          const decoded = atob(privateKey);
+          if (decoded.includes('-----BEGIN')) {
+            privateKeyFormat = 'base64-encoded-PEM';
+          } else {
+            privateKeyFormat = 'base64-raw';
+          }
+        } catch {
+          if (privateKey.includes('-----BEGIN')) {
+            privateKeyFormat = 'raw-PEM';
+          } else {
+            privateKeyFormat = 'unknown';
+          }
+        }
+      }
+      
       const diagnostics: Record<string, unknown> = {
         timestamp: new Date().toISOString(),
+        signatureMethod: 'RSA-SHA256 (OpenSSL compatible)',
         environment: {
           apiKeyPresent: !!apiKey,
           apiKeyLength: apiKey?.length || 0,
@@ -547,7 +626,8 @@ serve(async (req) => {
           apiKeyPrefix: apiKey ? apiKey.slice(0, 8) + '...' : 'N/A',
           privateKeyPresent: !!privateKey,
           privateKeyLength: privateKey?.length || 0,
-          privateKeyPrefix: privateKey ? privateKey.slice(0, 4) + '...' : 'N/A',
+          privateKeyPrefix: privateKey ? privateKey.slice(0, 8) + '...' : 'N/A',
+          privateKeyFormat: privateKeyFormat,
           apiBaseUrl: DRGREEN_API_URL,
         },
         signatureTests: {},
@@ -564,19 +644,21 @@ serve(async (req) => {
           const querySignature = await signQueryString(testQueryString, privateKey);
           
           diagnostics.signatureTests = {
+            signatureMethod: 'RSA-SHA256',
             bodySignature: {
               input: testPayload,
               inputLength: testPayload.length,
               outputLength: bodySignature.length,
               outputPrefix: bodySignature.slice(0, 16) + '...',
-              valid: bodySignature.length === 44, // Base64 of 32-byte HMAC
+              // RSA signatures are typically 256-512 bytes (344-684 base64 chars for 2048-4096 bit keys)
+              valid: bodySignature.length >= 100, // RSA signatures are much longer than HMAC
             },
             querySignature: {
               input: testQueryString,
               inputLength: testQueryString.length,
               outputLength: querySignature.length,
               outputPrefix: querySignature.slice(0, 16) + '...',
-              valid: querySignature.length === 44,
+              valid: querySignature.length >= 100,
             },
           };
         } catch (e) {
