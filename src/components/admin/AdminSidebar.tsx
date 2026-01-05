@@ -13,6 +13,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import hbIcon from '@/assets/hb-icon-white.png';
+import { useTenant } from '@/hooks/useTenant';
 
 interface NavItem {
   label: string;
@@ -24,6 +25,7 @@ interface NavItem {
 export function AdminSidebar() {
   const location = useLocation();
   const navigate = useNavigate();
+  const { tenant } = useTenant();
   const [pendingCount, setPendingCount] = useState(0);
 
   useEffect(() => {
@@ -111,7 +113,7 @@ export function AdminSidebar() {
       {/* Footer */}
       <div className="p-4 border-t border-[#EAB308]/30 space-y-1">
         <a
-          href="/"
+          href={tenant.siteUrl || '/'}
           target="_blank"
           rel="noopener noreferrer"
           className="flex items-center gap-3 px-3 py-2 w-full rounded-md text-sm text-white/70 hover:bg-white/10 hover:text-white transition-colors"

@@ -23,6 +23,8 @@ export interface TenantConfig {
   };
   nftContract?: `0x${string}`;
   apiEndpoint?: string;
+  /** URL for the main public site (used in admin "View Site" link) */
+  siteUrl?: string;
   social: {
     twitter?: string;
     linkedin?: string;
@@ -66,6 +68,7 @@ export const tenants: Record<string, TenantConfig> = {
       secondary: 'hsl(172, 50%, 30%)',
       accent: 'hsl(172, 70%, 50%)',
     },
+    siteUrl: 'https://healingbuds.eu',
     social: {
       twitter: 'https://twitter.com/healingbuds',
       linkedin: 'https://linkedin.com/company/healingbuds',
@@ -94,6 +97,7 @@ export const tenants: Record<string, TenantConfig> = {
     },
     // Dr. Green Digital Key NFT contract (placeholder - replace with actual)
     nftContract: '0x0000000000000000000000000000000000000000',
+    siteUrl: 'https://drgreennft.com',
     social: {
       twitter: 'https://twitter.com/drgreennft',
     },
