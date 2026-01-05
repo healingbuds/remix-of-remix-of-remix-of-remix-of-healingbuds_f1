@@ -25,6 +25,9 @@ interface ProtectedNFTRouteProps {
   loadingFallback?: ReactNode;
 }
 
+// Dev bypass for testing - set to true to skip NFT check
+const DEV_BYPASS_NFT_CHECK = import.meta.env.DEV;
+
 /**
  * Route guard that requires wallet authorization to access content
  * Implements the "Token-Gating" pattern from the reference architecture
@@ -38,6 +41,19 @@ export function ProtectedNFTRoute({
   const { isConnected } = useAccount();
   const { openWalletModal } = useWallet();
   const { hasNFT, isLoading } = useDrGreenKeyOwnership();
+
+  // Dev bypass - skip NFT check in development mode
+  if (DEV_BYPASS_NFT_CHECK) {
+    return (
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.3 }}
+      >
+        {children}
+      </motion.div>
+    );
+  }
 
   // Loading state
   if (isLoading) {
