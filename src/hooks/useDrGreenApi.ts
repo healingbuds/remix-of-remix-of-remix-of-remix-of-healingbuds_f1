@@ -20,19 +20,34 @@ export function useDrGreenApi() {
     data?: Record<string, unknown>
   ): Promise<DrGreenResponse<T>> => {
     try {
+      console.log(`[DrGreen API] Calling action: ${action}`);
+      
       const { data: response, error } = await supabase.functions.invoke('drgreen-proxy', {
         body: { action, ...data },
       });
 
       if (error) {
-        console.error('Dr Green API error:', error);
+        console.error(`[DrGreen API] Edge function error for ${action}:`, error);
         return { data: null, error: error.message };
       }
 
+      // Check for error in response body (API returned error)
+      if (response?.error || response?.success === false) {
+        console.error(`[DrGreen API] API error in response for ${action}:`, response);
+        return { data: null, error: response.error || response.message || 'API request failed' };
+      }
+
+      // Check for empty response
+      if (!response) {
+        console.error(`[DrGreen API] Empty response for ${action}`);
+        return { data: null, error: 'Empty response from API' };
+      }
+
+      console.log(`[DrGreen API] Success for ${action}:`, response);
       return { data: response as T, error: null };
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Unknown error';
-      console.error('Dr Green API exception:', err);
+      console.error(`[DrGreen API] Exception for ${action}:`, err);
       return { data: null, error: message };
     }
   };

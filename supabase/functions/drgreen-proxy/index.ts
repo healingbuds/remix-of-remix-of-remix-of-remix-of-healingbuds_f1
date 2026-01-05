@@ -1565,7 +1565,18 @@ serve(async (req) => {
       }
       
       case "create-order": {
+        logInfo('Creating order', { clientId: body.data?.clientId, itemCount: body.data?.items?.length });
         response = await drGreenRequest("/dapp/orders", "POST", body.data);
+        // Log response for debugging
+        const orderRespClone = response.clone();
+        const orderRespBody = await orderRespClone.text();
+        logInfo('Order creation response', { status: response.status, body: orderRespBody.slice(0, 500) });
+        // Re-create response with the body for downstream processing
+        response = new Response(orderRespBody, {
+          status: response.status,
+          statusText: response.statusText,
+          headers: response.headers,
+        });
         break;
       }
       
@@ -1598,7 +1609,18 @@ serve(async (req) => {
       }
       
       case "create-payment": {
+        logInfo('Creating payment', { orderId: body.data?.orderId, amount: body.data?.amount, currency: body.data?.currency });
         response = await drGreenRequest("/dapp/payments", "POST", body.data);
+        // Log response for debugging
+        const paymentRespClone = response.clone();
+        const paymentRespBody = await paymentRespClone.text();
+        logInfo('Payment creation response', { status: response.status, body: paymentRespBody.slice(0, 500) });
+        // Re-create response with the body for downstream processing
+        response = new Response(paymentRespBody, {
+          status: response.status,
+          statusText: response.statusText,
+          headers: response.headers,
+        });
         break;
       }
       
