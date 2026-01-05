@@ -26,3 +26,6 @@ verify_jwt = false
 
 [functions.strain-medical-info]
 verify_jwt = false
+
+[functions.seed-test-users]
+verify_jwt = false

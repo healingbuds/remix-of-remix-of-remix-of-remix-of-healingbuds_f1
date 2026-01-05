@@ -417,6 +417,13 @@ const AdminDashboard = () => {
 
   const adminTools = [
     {
+      title: "Customer Management",
+      description: "View and approve/reject customer KYC verification",
+      icon: Users,
+      link: "/admin/customers",
+      badge: stats?.dappPendingClients ? `${stats.dappPendingClients} pending` : null
+    },
+    {
       title: "Prescription Management",
       description: "Review and approve patient prescription documents",
       icon: FileText,
