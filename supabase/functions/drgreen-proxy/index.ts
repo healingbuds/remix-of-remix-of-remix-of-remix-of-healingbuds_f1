@@ -1506,13 +1506,28 @@ serve(async (req) => {
           throw new Error("Invalid country code");
         }
         logInfo(`Fetching strains for country: ${countryCode}`);
-        response = await drGreenRequest(`/dapp/strains?countryCode=${countryCode}`, "GET");
+        
+        // Use query signing (Method B) for GET list endpoints - matches get-strains-legacy
+        const queryParams: Record<string, string | number> = {
+          countryCode: countryCode,
+          orderBy: body?.orderBy || 'desc',
+          take: body?.take || 50,
+          page: body?.page || 1,
+        };
+        
+        response = await drGreenRequestQuery("/dapp/strains", queryParams);
         break;
       }
       
       case "get-all-strains": {
         logInfo("Fetching all strains");
-        response = await drGreenRequest("/dapp/strains", "GET");
+        // Use query signing (Method B) for GET list endpoints
+        const queryParams: Record<string, string | number> = {
+          orderBy: body?.orderBy || 'desc',
+          take: body?.take || 100,
+          page: body?.page || 1,
+        };
+        response = await drGreenRequestQuery("/dapp/strains", queryParams);
         break;
       }
       
