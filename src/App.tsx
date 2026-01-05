@@ -48,6 +48,7 @@ const AdminStrainSync = lazy(() => import("./pages/AdminStrainSync"));
 const AdminStrainKnowledge = lazy(() => import("./pages/AdminStrainKnowledge"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const AdminCustomers = lazy(() => import("./pages/AdminCustomers"));
+const AdminOrders = lazy(() => import("./pages/AdminOrders"));
 const Debug = lazy(() => import("./pages/Debug"));
 
 const queryClient = new QueryClient();
@@ -132,6 +133,13 @@ const AnimatedRoutes = () => {
             <ProtectedRoute requiredRole="admin">
               <ProtectedNFTRoute accessDeniedMessage="Admin access requires a Dr. Green Digital Key NFT.">
                 <AdminCustomers />
+              </ProtectedNFTRoute>
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/orders" element={
+            <ProtectedRoute requiredRole="admin">
+              <ProtectedNFTRoute accessDeniedMessage="Admin access requires a Dr. Green Digital Key NFT.">
+                <AdminOrders />
               </ProtectedNFTRoute>
             </ProtectedRoute>
           } />

@@ -7,7 +7,8 @@ import {
   RefreshCw, 
   BookOpen,
   LogOut,
-  ExternalLink
+  ExternalLink,
+  ShoppingCart
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
@@ -44,6 +45,7 @@ export function AdminSidebar() {
 
   const navItems: NavItem[] = [
     { label: 'Dashboard', href: '/admin', icon: LayoutDashboard },
+    { label: 'Orders', href: '/admin/orders', icon: ShoppingCart },
     { label: 'Customers', href: '/admin/customers', icon: Users, badge: pendingCount },
     { label: 'Prescriptions', href: '/admin/prescriptions', icon: FileText },
     { label: 'Strains', href: '/admin/strains', icon: Leaf },
