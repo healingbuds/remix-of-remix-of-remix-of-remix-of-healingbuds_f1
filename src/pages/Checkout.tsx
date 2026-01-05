@@ -82,15 +82,22 @@ const Checkout = () => {
         throw new Error(orderResult.error || 'Failed to create order');
       }
 
-      const createdOrderId = orderResult.data.orderId;
+      const createdOrderId = orderResult.data?.orderId;
+      
+      // Validate order ID before proceeding
+      if (!createdOrderId || typeof createdOrderId !== 'string') {
+        console.error('Order creation response missing orderId:', orderResult);
+        throw new Error('Order creation failed - no order ID received from API');
+      }
+      
       setPaymentStatus('Initiating payment...');
 
       // Step 2: Create payment via Dr Green API
-      const countryCode = drGreenClient.country_code || 'PT';
+      const clientCountryCode = drGreenClient.country_code || 'PT';
       const paymentResult = await createPayment({
         orderId: createdOrderId,
         amount: cartTotal,
-        currency: getCurrencyForCountry(countryCode),
+        currency: getCurrencyForCountry(clientCountryCode),
         clientId: drGreenClient.drgreen_client_id,
       });
 
@@ -98,7 +105,14 @@ const Checkout = () => {
         throw new Error(paymentResult.error || 'Failed to initiate payment');
       }
 
-      const paymentId = paymentResult.data.paymentId;
+      const paymentId = paymentResult.data?.paymentId;
+      
+      // Validate payment ID before polling
+      if (!paymentId || typeof paymentId !== 'string') {
+        console.error('Payment creation response missing paymentId:', paymentResult);
+        throw new Error('Payment initiation failed - no payment ID received from API');
+      }
+      
       setPaymentStatus('Processing payment...');
 
       // Step 3: Poll for payment status (simplified - in production would use webhooks)
