@@ -7,7 +7,8 @@
  */
 
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { LogOut, LayoutDashboard, User } from "lucide-react";
+import { LogOut, LayoutDashboard, User, Shield } from "lucide-react";
+import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { useState, useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 import { motion, useScroll, useSpring } from "framer-motion";
@@ -42,6 +43,7 @@ const Header = ({ onMenuStateChange }: HeaderProps) => {
   const { resolvedTheme } = useTheme();
   const { tenant } = useTenant();
   const headerRef = useRef<HTMLElement>(null);
+  const { isAdmin } = useIsAdmin();
   
   const isDark = resolvedTheme === 'dark';
   
@@ -195,15 +197,15 @@ const Header = ({ onMenuStateChange }: HeaderProps) => {
                   {user ? (
                     <>
                       <Link
-                        to="/dashboard"
+                        to={isAdmin ? "/admin" : "/dashboard"}
                         className={cn(
                           "font-medium px-4 py-2.5 rounded-lg transition-all duration-300",
                           "bg-white/10 text-white hover:bg-white/20 border border-white/20 hover:border-[#EAB308]/50",
                           "text-sm flex items-center gap-2"
                         )}
                       >
-                        <LayoutDashboard className="w-4 h-4" />
-                        Portal
+                        {isAdmin ? <Shield className="w-4 h-4" /> : <LayoutDashboard className="w-4 h-4" />}
+                        {isAdmin ? "Admin Portal" : "Portal"}
                       </Link>
                       <button
                         onClick={handleLogout}
@@ -255,6 +257,7 @@ const Header = ({ onMenuStateChange }: HeaderProps) => {
         isOpen={mobileMenuOpen}
         onClose={() => setMobileMenuOpen(false)}
         user={user}
+        isAdmin={isAdmin}
         onLogout={handleLogout}
         onEligibilityClick={() => setEligibilityDialogOpen(true)}
         scrolled={scrolled}
