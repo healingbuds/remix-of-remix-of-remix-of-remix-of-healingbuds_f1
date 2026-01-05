@@ -98,6 +98,8 @@ export type Database = {
           country_code: string
           created_at: string
           drgreen_client_id: string
+          email: string | null
+          full_name: string | null
           id: string
           is_kyc_verified: boolean | null
           kyc_link: string | null
@@ -109,6 +111,8 @@ export type Database = {
           country_code?: string
           created_at?: string
           drgreen_client_id: string
+          email?: string | null
+          full_name?: string | null
           id?: string
           is_kyc_verified?: boolean | null
           kyc_link?: string | null
@@ -120,6 +124,8 @@ export type Database = {
           country_code?: string
           created_at?: string
           drgreen_client_id?: string
+          email?: string | null
+          full_name?: string | null
           id?: string
           is_kyc_verified?: boolean | null
           kyc_link?: string | null

@@ -859,7 +859,21 @@ serve(async (req) => {
           }
         };
         
-        // Enhanced logging for debugging
+        // Enhanced logging for debugging - log BEFORE API call
+        console.log("[create-client-legacy] ========== CLIENT CREATION START ==========");
+        console.log("[create-client-legacy] Timestamp:", new Date().toISOString());
+        console.log("[create-client-legacy] API credentials check:", {
+          hasApiKey: !!Deno.env.get("DRGREEN_API_KEY"),
+          hasPrivateKey: !!Deno.env.get("DRGREEN_PRIVATE_KEY"),
+          apiKeyLength: Deno.env.get("DRGREEN_API_KEY")?.length || 0,
+          privateKeyLength: Deno.env.get("DRGREEN_PRIVATE_KEY")?.length || 0,
+        });
+        console.log("[create-client-legacy] Payload summary:", {
+          email: dappPayload.user_identity.email?.slice(0, 5) + '***',
+          countryCode: dappPayload.eligibility_results.country_code,
+          hasShippingAddress: !!dappPayload.shipping_address.street,
+        });
+        
         logInfo("Creating client with transformed legacy payload", {
           hasApiKey: !!Deno.env.get("DRGREEN_API_KEY"),
           hasPrivateKey: !!Deno.env.get("DRGREEN_PRIVATE_KEY"),
@@ -867,11 +881,19 @@ serve(async (req) => {
           countryCode: dappPayload.eligibility_results.country_code,
         });
         
-        response = await drGreenRequestBody("/dapp/clients", "POST", dappPayload);
+        // Call API with detailed logging enabled
+        response = await drGreenRequestBody("/dapp/clients", "POST", dappPayload, true);
         
         // Log response details for debugging
         const clonedResp = response.clone();
         const respBody = await clonedResp.text();
+        
+        console.log("[create-client-legacy] ========== API RESPONSE ==========");
+        console.log("[create-client-legacy] Status:", response.status);
+        console.log("[create-client-legacy] StatusText:", response.statusText);
+        console.log("[create-client-legacy] Headers:", JSON.stringify(Object.fromEntries(response.headers.entries())));
+        console.log("[create-client-legacy] Body:", respBody.slice(0, 500));
+        
         logInfo("Client creation API response", {
           status: response.status,
           statusText: response.statusText,
@@ -879,10 +901,24 @@ serve(async (req) => {
         });
         
         if (!response.ok) {
+          console.log("[create-client-legacy] ========== ERROR ANALYSIS ==========");
+          console.log("[create-client-legacy] Error status:", response.status);
+          console.log("[create-client-legacy] Full error body:", respBody);
+          
+          if (response.status === 401) {
+            console.log("[create-client-legacy] DIAGNOSIS: Authentication failed - check API key/signature");
+          } else if (response.status === 422) {
+            console.log("[create-client-legacy] DIAGNOSIS: Validation error - check payload format");
+          } else if (response.status === 403) {
+            console.log("[create-client-legacy] DIAGNOSIS: Permission denied - check account permissions");
+          }
+          
           logError("Client creation failed", {
             status: response.status,
             body: respBody.slice(0, 500),
           });
+        } else {
+          console.log("[create-client-legacy] SUCCESS: Client created successfully");
         }
         
         break;
