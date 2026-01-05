@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { encode as base64Encode } from "https://deno.land/std@0.168.0/encoding/base64.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { secp256k1 } from "https://esm.sh/@noble/curves@1.3.0/secp256k1";
+import { sha256 } from "https://esm.sh/@noble/hashes@1.3.3/sha256";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -189,12 +190,48 @@ const DRGREEN_API_URL = "https://api.drgreennft.com/api/v1";
 const API_TIMEOUT_MS = 20000;
 
 /**
- * Sign payload using RSA-SHA256 (matching WordPress OpenSSL implementation)
- * Uses native Web Crypto API with RSASSA-PKCS1-v1_5
- * The private key is stored as a base64-encoded PEM key
- * This is used for POST requests and singular GET requests (Method A)
+ * Extract raw 32-byte private key from PKCS8 PEM format (EC secp256k1)
+ * PKCS8 structure contains ASN.1 headers followed by the SEC1 EC private key
  */
-async function signPayload(payload: string, privateKeyBase64: string): Promise<string> {
+function extractPrivateKeyBytes(pemContent: string): Uint8Array {
+  // Remove PEM headers and decode
+  const lines = pemContent.split('\n');
+  const base64Content = lines
+    .filter(line => !line.startsWith('-----'))
+    .join('');
+  
+  const binaryStr = atob(base64Content);
+  const bytes = new Uint8Array(binaryStr.length);
+  for (let i = 0; i < binaryStr.length; i++) {
+    bytes[i] = binaryStr.charCodeAt(i);
+  }
+  
+  // PKCS8 structure for EC key - look for OCTET STRING tag (0x04) with length 0x20 (32 bytes)
+  // The 32-byte private key follows this pattern
+  for (let i = 0; i < bytes.length - 34; i++) {
+    if (bytes[i] === 0x04 && bytes[i + 1] === 0x20) {
+      const extracted = bytes.slice(i + 2, i + 34);
+      // Verify it looks like a valid private key (not all zeros, not too small)
+      if (extracted.some(b => b !== 0)) {
+        return extracted;
+      }
+    }
+  }
+  
+  // Fallback: try common PKCS8 offset (byte 36) for secp256k1
+  if (bytes.length >= 68) {
+    return bytes.slice(36, 68);
+  }
+  
+  throw new Error('Could not extract private key from PKCS8 structure');
+}
+
+/**
+ * Sign payload using ECDSA secp256k1 with SHA-256
+ * This matches the WordPress openssl_sign($payload, $sig, $privateKey, OPENSSL_ALGO_SHA256) for EC keys
+ * The private key is stored as a base64-encoded PEM key
+ */
+function signPayload(payload: string, privateKeyBase64: string): string {
   try {
     // Step 1: Decode base64 to get PEM content
     let pemContents: string;
@@ -205,88 +242,52 @@ async function signPayload(payload: string, privateKeyBase64: string): Promise<s
       pemContents = privateKeyBase64;
     }
     
-    // Step 2: Extract the key data from PEM format
-    // Handle both PKCS#8 (BEGIN PRIVATE KEY) and PKCS#1 (BEGIN RSA PRIVATE KEY)
-    let pemBody: string;
-    let keyFormat: "pkcs8" | "pkcs1" = "pkcs8";
+    // Step 2: Extract raw 32-byte private key from PKCS8 PEM
+    const privateKeyBytes = extractPrivateKeyBytes(pemContents);
     
-    if (pemContents.includes("-----BEGIN PRIVATE KEY-----")) {
-      // PKCS#8 format
-      pemBody = pemContents
-        .replace("-----BEGIN PRIVATE KEY-----", "")
-        .replace("-----END PRIVATE KEY-----", "")
-        .replace(/[\r\n\s]/g, "");
-      keyFormat = "pkcs8";
-    } else if (pemContents.includes("-----BEGIN RSA PRIVATE KEY-----")) {
-      // PKCS#1 format - need to handle differently
-      pemBody = pemContents
-        .replace("-----BEGIN RSA PRIVATE KEY-----", "")
-        .replace("-----END RSA PRIVATE KEY-----", "")
-        .replace(/[\r\n\s]/g, "");
-      // Note: Web Crypto API doesn't directly support PKCS#1, but we'll try pkcs8
-      // Most modern keys are PKCS#8
-      keyFormat = "pkcs8";
-      logWarn("PKCS#1 key format detected - attempting import as PKCS#8");
-    } else {
-      // No PEM headers - assume raw base64 key data in PKCS#8 format
-      pemBody = pemContents.replace(/[\r\n\s]/g, "");
-    }
+    logDebug("ECDSA private key extracted", {
+      keyLength: privateKeyBytes.length,
+      keyFormat: 'secp256k1'
+    });
     
-    // Step 3: Decode base64 to binary
-    const binaryString = atob(pemBody);
-    const binaryKey = new Uint8Array(binaryString.length);
-    for (let i = 0; i < binaryString.length; i++) {
-      binaryKey[i] = binaryString.charCodeAt(i);
-    }
+    // Step 3: Hash the payload with SHA-256
+    const messageBytes = new TextEncoder().encode(payload);
+    const messageHash = sha256(messageBytes);
     
-    // Step 4: Import the key using Web Crypto API
-    const cryptoKey = await crypto.subtle.importKey(
-      keyFormat,
-      binaryKey.buffer,
-      { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" },
-      false,
-      ["sign"]
-    );
+    // Step 4: Sign with secp256k1 ECDSA
+    const signature = secp256k1.sign(messageHash, privateKeyBytes);
     
-    // Step 5: Sign the payload
-    const encoder = new TextEncoder();
-    const payloadData = encoder.encode(payload);
-    const signatureBuffer = await crypto.subtle.sign(
-      "RSASSA-PKCS1-v1_5",
-      cryptoKey,
-      payloadData
-    );
-    
-    // Step 6: Convert ArrayBuffer to Base64 string
-    const signatureBytes = new Uint8Array(signatureBuffer);
+    // Step 5: Return DER-encoded signature as base64 (matches OpenSSL output)
+    const derBytes = signature.toDERRawBytes();
     let binary = '';
-    for (let i = 0; i < signatureBytes.byteLength; i++) {
-      binary += String.fromCharCode(signatureBytes[i]);
+    for (let i = 0; i < derBytes.length; i++) {
+      binary += String.fromCharCode(derBytes[i]);
     }
     const base64Signature = btoa(binary);
     
     // Debug logging
-    logInfo("RSA signature generated", {
-      signatureLength: base64Signature.length,  // RSA signatures are longer than HMAC
+    logInfo("ECDSA signature generated", {
+      signatureLength: base64Signature.length,
       signaturePreview: base64Signature.slice(0, 16) + "...",
       payloadLength: payload.length,
     });
     
     return base64Signature;
   } catch (error) {
-    logError("RSA signature generation failed", {
+    logError("ECDSA signature generation failed", {
       error: error instanceof Error ? error.message : String(error),
       keyLength: privateKeyBase64?.length || 0,
     });
-    throw new Error(`Failed to sign payload: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    throw new Error(`Failed to sign payload with ECDSA: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }
 
+
 /**
- * Sign query string using RSA-SHA256 (matching WordPress legacy)
+ * Sign query string using ECDSA secp256k1 (matching WordPress legacy)
  * This is used for GET list endpoints (Method B)
  */
-async function signQueryString(queryString: string, privateKeyBase64: string): Promise<string> {
+function signQueryString(queryString: string, privateKeyBase64: string): string {
   return signPayload(queryString, privateKeyBase64);
 }
 
@@ -321,7 +322,7 @@ async function drGreenRequestBody(
   }
   
   const payload = body ? JSON.stringify(body) : "";
-  const signature = await signPayload(payload, secretKey);
+  const signature = signPayload(payload, secretKey);
   
   if (enableDetailedLogging) {
     console.log("[API-DEBUG] Payload length:", payload.length);
@@ -417,7 +418,7 @@ async function drGreenRequestQuery(
   const queryString = params.toString();
   
   // Sign the query string (not the body)
-  const signature = await signQueryString(queryString, secretKey);
+  const signature = signQueryString(queryString, secretKey);
   
   if (enableDetailedLogging) {
     console.log("[API-DEBUG] Query string:", queryString);
@@ -560,7 +561,7 @@ serve(async (req) => {
             privateKey.includes('-----BEGIN') ? 'PEM' :
             /^[A-Za-z0-9+/=]+$/.test(privateKey) ? 'base64-encoded' : 'unknown'
           ) : 'missing',
-          signatureMethod: 'RSA-SHA256 (OpenSSL compatible)',
+          signatureMethod: 'ECDSA secp256k1 with SHA-256',
         },
         allSecretsConfigured: !!apiKey && !!privateKey && hasSupabaseUrl && hasAnonKey,
         apiBaseUrl: DRGREEN_API_URL,
@@ -618,7 +619,7 @@ serve(async (req) => {
       
       const diagnostics: Record<string, unknown> = {
         timestamp: new Date().toISOString(),
-        signatureMethod: 'RSA-SHA256 (OpenSSL compatible)',
+        signatureMethod: 'ECDSA secp256k1 with SHA-256',
         environment: {
           apiKeyPresent: !!apiKey,
           apiKeyLength: apiKey?.length || 0,
@@ -640,25 +641,25 @@ serve(async (req) => {
         const testQueryString = "orderBy=desc&take=1&page=1";
         
         try {
-          const bodySignature = await signPayload(testPayload, privateKey);
-          const querySignature = await signQueryString(testQueryString, privateKey);
+          const bodySignature = signPayload(testPayload, privateKey);
+          const querySignature = signQueryString(testQueryString, privateKey);
           
           diagnostics.signatureTests = {
-            signatureMethod: 'RSA-SHA256',
+            signatureMethod: 'ECDSA secp256k1',
             bodySignature: {
               input: testPayload,
               inputLength: testPayload.length,
               outputLength: bodySignature.length,
               outputPrefix: bodySignature.slice(0, 16) + '...',
-              // RSA signatures are typically 256-512 bytes (344-684 base64 chars for 2048-4096 bit keys)
-              valid: bodySignature.length >= 100, // RSA signatures are much longer than HMAC
+              // ECDSA secp256k1 DER signatures are typically 70-72 bytes (96-100 base64 chars)
+              valid: bodySignature.length >= 60 && bodySignature.length <= 120,
             },
             querySignature: {
               input: testQueryString,
               inputLength: testQueryString.length,
               outputLength: querySignature.length,
               outputPrefix: querySignature.slice(0, 16) + '...',
-              valid: querySignature.length >= 100,
+              valid: querySignature.length >= 60 && querySignature.length <= 120,
             },
           };
         } catch (e) {
@@ -1072,7 +1073,7 @@ serve(async (req) => {
         
         // WordPress signs {"cartId": basketId} but passes strainId as query param
         const signPayloadData = { cartId };
-        const signature = await signPayload(JSON.stringify(signPayloadData), Deno.env.get("DRGREEN_PRIVATE_KEY")!);
+        const signature = signPayload(JSON.stringify(signPayloadData), Deno.env.get("DRGREEN_PRIVATE_KEY")!);
         
         const apiKey = Deno.env.get("DRGREEN_API_KEY")!;
         const apiUrl = `${DRGREEN_API_URL}/carts/${cartId}?strainId=${strainId}`;
