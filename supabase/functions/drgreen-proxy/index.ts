@@ -6,6 +6,8 @@ import { sha256 } from "https://esm.sh/@noble/hashes@1.3.3/sha256";
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+  'Access-Control-Max-Age': '86400',
 };
 
 // Log level configuration - defaults to INFO in production
