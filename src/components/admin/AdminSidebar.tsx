@@ -6,7 +6,8 @@ import {
   Leaf, 
   RefreshCw, 
   BookOpen,
-  LogOut
+  LogOut,
+  ExternalLink
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
@@ -108,7 +109,16 @@ export function AdminSidebar() {
       </nav>
 
       {/* Footer */}
-      <div className="p-4 border-t border-[#EAB308]/30">
+      <div className="p-4 border-t border-[#EAB308]/30 space-y-1">
+        <a
+          href="/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-3 px-3 py-2 w-full rounded-md text-sm text-white/70 hover:bg-white/10 hover:text-white transition-colors"
+        >
+          <ExternalLink className="h-4 w-4" />
+          <span>View Site</span>
+        </a>
         <button
           onClick={handleLogout}
           className="flex items-center gap-3 px-3 py-2 w-full rounded-md text-sm text-white/70 hover:bg-white/10 hover:text-white transition-colors"
