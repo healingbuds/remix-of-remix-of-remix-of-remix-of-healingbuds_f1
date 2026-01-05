@@ -5,7 +5,7 @@
  */
 
 import { Link, useLocation } from "react-router-dom";
-import { X, LogOut, LayoutDashboard, User, FileText, ClipboardCheck, ShoppingBag, HeadphonesIcon, Home } from "lucide-react";
+import { X, LogOut, LayoutDashboard, User, FileText, ClipboardCheck, ShoppingBag, HeadphonesIcon, Home, Shield } from "lucide-react";
 import { useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
@@ -20,6 +20,7 @@ interface NavigationOverlayProps {
   isOpen: boolean;
   onClose: () => void;
   user: SupabaseUser | null;
+  isAdmin?: boolean;
   onLogout: () => void;
   onEligibilityClick: () => void;
   scrolled: boolean;
@@ -29,6 +30,7 @@ const NavigationOverlay = ({
   isOpen,
   onClose,
   user,
+  isAdmin = false,
   onLogout,
   onEligibilityClick,
 }: NavigationOverlayProps) => {
@@ -245,7 +247,7 @@ const NavigationOverlay = ({
                 {user ? (
                   <>
                     <Link
-                      to="/dashboard"
+                      to={isAdmin ? "/admin" : "/dashboard"}
                       onClick={onClose}
                       className={cn(
                         "flex items-center gap-4 py-4 px-5 rounded-xl transition-all duration-200",
@@ -254,8 +256,12 @@ const NavigationOverlay = ({
                         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#EAB308]/50"
                       )}
                     >
-                      <LayoutDashboard className="w-5 h-5 text-[#EAB308]" />
-                      <span className="font-medium">Patient Portal</span>
+                      {isAdmin ? (
+                        <Shield className="w-5 h-5 text-[#EAB308]" />
+                      ) : (
+                        <LayoutDashboard className="w-5 h-5 text-[#EAB308]" />
+                      )}
+                      <span className="font-medium">{isAdmin ? "Admin Portal" : "Patient Portal"}</span>
                     </Link>
                     <button
                       onClick={handleLogout}
