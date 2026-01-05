@@ -289,7 +289,7 @@ const AdminDashboard = () => {
   return (
     <AdminLayout 
       title="Dashboard" 
-      description="Live data from Dr Green Dapp API"
+      description="Live store data"
     >
       {/* Refresh Button */}
       <div className="flex justify-end mb-6">
@@ -331,7 +331,7 @@ const AdminDashboard = () => {
                 {stat.live && (
                   <span className="text-xs text-muted-foreground mt-2 inline-flex items-center gap-1">
                     <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
-                    Live from API
+                    Live
                   </span>
                 )}
               </CardContent>
@@ -378,9 +378,9 @@ const AdminDashboard = () => {
 
       {/* Info Note */}
       <div className="mt-8 bg-muted/50 border border-border rounded-lg p-4 text-sm text-muted-foreground">
-        <strong>Note:</strong> Client approval is managed by the Dr. Green API.
+        <strong>Note:</strong> Client verification is managed automatically.
         This admin portal provides read-only access to customer verification status.
-        Status changes occur automatically after KYC verification through the Dr. Green platform.
+        Status updates occur after KYC completion.
       </div>
     </AdminLayout>
   );

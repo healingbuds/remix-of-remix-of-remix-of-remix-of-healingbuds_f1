@@ -61,14 +61,14 @@ export function AdminSidebar() {
   };
 
   return (
-    <aside className="w-64 bg-card border-r border-border min-h-screen flex flex-col">
+    <aside className="w-64 bg-teal-midnight min-h-screen flex flex-col">
       {/* Logo / Brand */}
-      <div className="p-4 border-b border-border">
+      <div className="p-4 border-b border-white/10">
         <Link to="/admin" className="flex items-center gap-3">
           <img src={hbLogo} alt="Healing Buds" className="h-8 w-auto" />
           <div>
-            <span className="font-semibold text-foreground text-sm">Healing Buds</span>
-            <span className="block text-xs text-muted-foreground">Admin Portal</span>
+            <span className="font-semibold text-white text-sm">Healing Buds</span>
+            <span className="block text-xs text-white/60">Admin Portal</span>
           </div>
         </Link>
       </div>
@@ -86,8 +86,8 @@ export function AdminSidebar() {
                   to={item.href}
                   className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors ${
                     active
-                      ? 'bg-primary text-primary-foreground'
-                      : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                      ? 'bg-white/15 text-white font-medium'
+                      : 'text-white/70 hover:bg-white/10 hover:text-white'
                   }`}
                 >
                   <Icon className="h-4 w-4" />
@@ -95,8 +95,8 @@ export function AdminSidebar() {
                   {item.badge !== undefined && item.badge > 0 && (
                     <span className={`text-xs px-2 py-0.5 rounded-full ${
                       active 
-                        ? 'bg-primary-foreground/20 text-primary-foreground' 
-                        : 'bg-destructive text-destructive-foreground'
+                        ? 'bg-white/20 text-white' 
+                        : 'bg-amber-500 text-white'
                     }`}>
                       {item.badge}
                     </span>
@@ -109,10 +109,10 @@ export function AdminSidebar() {
       </nav>
 
       {/* Footer */}
-      <div className="p-4 border-t border-border">
+      <div className="p-4 border-t border-white/10">
         <button
           onClick={handleLogout}
-          className="flex items-center gap-3 px-3 py-2 w-full rounded-md text-sm text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+          className="flex items-center gap-3 px-3 py-2 w-full rounded-md text-sm text-white/70 hover:bg-white/10 hover:text-white transition-colors"
         >
           <LogOut className="h-4 w-4" />
           <span>Sign Out</span>

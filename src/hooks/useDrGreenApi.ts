@@ -218,10 +218,8 @@ export function useDrGreenApi() {
     }>('dapp-client-details', { clientId });
   };
 
-  // Verify or reject a client
-  const verifyDappClient = async (clientId: string, action: 'verify' | 'reject') => {
-    return callProxy<{ success: boolean; message: string }>('dapp-verify-client', { clientId, action });
-  };
+  // Note: Client verification is managed by the backend automatically.
+  // Admin cannot manually verify/reject clients - this is handled by the KYC system.
 
   // Get all Dapp orders (paginated)
   const getDappOrders = async (params?: {
@@ -322,15 +320,8 @@ export function useDrGreenApi() {
     return callProxy<{ success: boolean; client: object }>('patch-client', { clientId, data });
   };
 
-  // Activate a client (admin only)
-  const activateClient = async (clientId: string) => {
-    return callProxy<{ success: boolean; message: string }>('activate-client', { clientId });
-  };
-
-  // Deactivate a client (admin only)
-  const deactivateClient = async (clientId: string) => {
-    return callProxy<{ success: boolean; message: string }>('deactivate-client', { clientId });
-  };
+  // Note: activateClient and deactivateClient removed - admin portal is read-only
+  // Client activation/deactivation is managed by the backend automatically.
 
   // Bulk delete clients (admin only, max 50)
   const bulkDeleteClients = async (clientIds: string[]) => {
@@ -347,13 +338,12 @@ export function useDrGreenApi() {
     getOrders,
     getStrains,
     callProxy,
-    // Admin methods
+    // Admin methods (read-only)
     getDashboardSummary,
     getDashboardAnalytics,
     getSalesSummary,
     getDappClients,
     getDappClientDetails,
-    verifyDappClient,
     getDappOrders,
     getDappOrderDetails,
     updateDappOrder,
@@ -362,8 +352,6 @@ export function useDrGreenApi() {
     getUserMe,
     deleteClient,
     patchClient,
-    activateClient,
-    deactivateClient,
     bulkDeleteClients,
   };
 }

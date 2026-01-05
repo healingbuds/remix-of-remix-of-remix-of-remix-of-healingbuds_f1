@@ -26,12 +26,12 @@ interface ProtectedNFTRouteProps {
 }
 
 /**
- * Route guard that requires NFT ownership to access content
+ * Route guard that requires wallet authorization to access content
  * Implements the "Token-Gating" pattern from the reference architecture
  */
 export function ProtectedNFTRoute({
   children,
-  accessDeniedMessage = 'You need a Digital Key NFT to access this content.',
+  accessDeniedMessage = 'Authorized wallet required to access this portal.',
   showBlurredPreview = true,
   loadingFallback,
 }: ProtectedNFTRouteProps) {
@@ -46,7 +46,7 @@ export function ProtectedNFTRoute({
         <div className="flex min-h-[400px] items-center justify-center">
           <div className="flex flex-col items-center gap-4">
             <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-            <p className="text-sm text-muted-foreground">Verifying NFT ownership...</p>
+            <p className="text-sm text-muted-foreground">Verifying access...</p>
           </div>
         </div>
       )
@@ -82,7 +82,7 @@ export function ProtectedNFTRoute({
               </motion.div>
               <CardTitle>Connect Your Wallet</CardTitle>
               <CardDescription>
-                Connect your wallet to verify your Digital Key NFT and unlock exclusive access.
+                Connect your wallet to verify access permissions.
               </CardDescription>
             </CardHeader>
             <CardContent className="flex justify-center">
@@ -129,15 +129,15 @@ export function ProtectedNFTRoute({
             </CardHeader>
             <CardContent className="space-y-4 text-center">
               <p className="text-sm text-muted-foreground">
-                Your connected wallet does not hold the required Digital Key NFT.
+                Your connected wallet does not have the required access credentials.
               </p>
               <div className="flex flex-col gap-2 sm:flex-row sm:justify-center">
                 <Button variant="outline" onClick={openWalletModal}>
                   Switch Wallet
                 </Button>
                 <Button asChild>
-                  <a href="https://drgreennft.com" target="_blank" rel="noopener noreferrer">
-                    Get a Digital Key
+                  <a href="/contact">
+                    Request Access
                   </a>
                 </Button>
               </div>
